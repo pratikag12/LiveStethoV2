@@ -1,0 +1,67 @@
+﻿<Window x:Class="LiveStethoV2.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:s="http://schemas.abtsoftware.co.uk/scichart"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="400" Width="600">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="367*"/>
+            <ColumnDefinition Width="150*"/>
+        </Grid.ColumnDefinitions>
+        <Button x:Name="btnStream" Content="Stream" HorizontalAlignment="Left" Margin="8.333,43,0,0" VerticalAlignment="Top" Width="75" Click="btnStream_Click" Grid.Column="1"/>
+        <Button x:Name="btnStop" Content="Stop" HorizontalAlignment="Left" Margin="8.333,115,0,0" VerticalAlignment="Top" Width="75" Grid.Column="1"/>
+        <Button x:Name="btnRecord" Content="Record To File" HorizontalAlignment="Left" Margin="8.333,193,0,0" VerticalAlignment="Top" Width="97" Height="24" Grid.Column="1"/>
+        <Button x:Name="btnStopRecord" HorizontalAlignment="Left" Margin="8.333,248,0,0" VerticalAlignment="Top" Width="97" Height="24" RenderTransformOrigin="0.468,2.719" Grid.Column="1"/>
+        <CheckBox x:Name="checkboxFile" Content="Record To New File" HorizontalAlignment="Left" Margin="12.333,217,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+        <Label x:Name="tltLabel" Content="SoundData" HorizontalAlignment="Left" Margin="121,18,0,0" VerticalAlignment="Top"/>
+
+        <s:SciChartSurface x:Name="sciChartSurface">
+            <!--  Create a RenderableSeries, which map 1:1 to the DataSeries created in code-behind  -->
+            <s:SciChartSurface.RenderableSeries>
+                <s:FastLineRenderableSeries x:Name="SoundSeries"
+                                            Stroke="LightSkyBlue"
+                                            StrokeThickness="3" />
+            </s:SciChartSurface.RenderableSeries>
+            <!--  Create an X Axis  -->
+            <s:SciChartSurface.XAxis>
+                <s:NumericAxis AutoRange="Always"
+                               AxisTitle="Time (Sec)"
+                               DrawMinorGridLines="False"
+                               DrawMinorTicks="False"
+                               TextFormatting="0.00">
+                    <s:NumericAxis.GrowBy>
+                        <s:DoubleRange Max="1" Min="1" />
+                    </s:NumericAxis.GrowBy>
+                </s:NumericAxis>
+            </s:SciChartSurface.XAxis>
+
+            <!--  Create a Y Axis  -->
+            <s:SciChartSurface.YAxis>
+                <s:NumericAxis AutoRange="Always"
+                               AxisTitle="Value"
+                               DrawMinorGridLines="False"
+                               DrawMinorTicks="False"
+                               TextFormatting="0.00">
+                    <s:NumericAxis.GrowBy>
+                        <s:DoubleRange Max="1" Min="1" />
+                    </s:NumericAxis.GrowBy>
+                </s:NumericAxis>
+            </s:SciChartSurface.YAxis>
+            <!--  Specify interactivity modifiers  -->
+            <s:SciChartSurface.ChartModifier>
+                <s:ModifierGroup>
+                    <s:RubberBandXyZoomModifier ExecuteOn="MouseLeftButton"
+                                                RubberBandFill="#33FFFFFF" RubberBandStroke="#AAFFFFFF"
+                                                RubberBandStrokeDashArray="2 2"/>
+                    <s:ZoomPanModifier ExecuteOn="MouseRightButton" ClipModeX="None" />
+                    <s:MouseWheelZoomModifier/>
+                    <s:ZoomExtentsModifier ExecuteOn="MouseDoubleClick" />
+                </s:ModifierGroup>
+            </s:SciChartSurface.ChartModifier> 
+        </s:SciChartSurface>
+
+    </Grid>
+</Window>
