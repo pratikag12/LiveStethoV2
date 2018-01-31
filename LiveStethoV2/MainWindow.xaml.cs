@@ -28,7 +28,7 @@ namespace LiveStethoV2
         //Binary Reader (TODO: temp)-----------------------------------------
         public byte[] Sound = new byte[16000 * 2];  //1 Sec of Buffered Sound Data
         public BinaryReader sr;
-        public string inputfile = @"D:\Stethoscope Test Data\TestAudio.dat";
+        public string inputfile = @"D:\Stethoscope Test Data\Pratik_Heart_6_OP_Clean.dat";
 
         //Audio Player Classes--------------------------------------------
         AudioPlayer StethoPlayer;
@@ -53,7 +53,7 @@ namespace LiveStethoV2
             }
 
             //SerialDataIn = new SerialCom(SerialWait, 115200);
-            StethoPlayer = new AudioPlayer(15700, 16, 1);  //Audio Player Class
+            StethoPlayer = new AudioPlayer(15277, 16, 1);  //Audio Player Class
             //StethoOutFile = new WaveWriter(_outputwave, 16000, 16, 1); //Wave Writer Class
 
             //Remove this with serial stream added
@@ -63,6 +63,7 @@ namespace LiveStethoV2
             SoundData = new XyDataSeries<long, short>();
             SoundData.FifoCapacity = this.Capacity * 16000;
             SoundSeries.DataSeries = SoundData; 
+            Yaxis.VisibleRange = new DoubleRange(-32000, 32000);
         }
 
         private void btnStream_Click(object sender, RoutedEventArgs e)

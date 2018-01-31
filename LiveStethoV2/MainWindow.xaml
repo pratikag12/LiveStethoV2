@@ -5,17 +5,20 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:s="http://schemas.abtsoftware.co.uk/scichart"
         mc:Ignorable="d"
-        Title="MainWindow" Height="400" Width="600">
+        Title="MainWindow" Height="400" Width="600"
+        Background="Black">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="367*"/>
             <ColumnDefinition Width="150*"/>
         </Grid.ColumnDefinitions>
-        <Button x:Name="btnStream" Content="Stream" HorizontalAlignment="Left" Margin="8.333,43,0,0" VerticalAlignment="Top" Width="75" Click="btnStream_Click" Grid.Column="1"/>
-        <Button x:Name="btnStop" Content="Stop" HorizontalAlignment="Left" Margin="8.333,115,0,0" VerticalAlignment="Top" Width="75" Grid.Column="1"/>
-        <Button x:Name="btnRecord" Content="Record To File" HorizontalAlignment="Left" Margin="8.333,193,0,0" VerticalAlignment="Top" Width="97" Height="24" Grid.Column="1"/>
-        <Button x:Name="btnStopRecord" HorizontalAlignment="Left" Margin="8.333,248,0,0" VerticalAlignment="Top" Width="97" Height="24" RenderTransformOrigin="0.468,2.719" Grid.Column="1"/>
-        <CheckBox x:Name="checkboxFile" Content="Record To New File" HorizontalAlignment="Left" Margin="12.333,217,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+
+
+        <Button x:Name="btnStream" Content="Stream" HorizontalAlignment="Left" Margin="43,21,0,0" VerticalAlignment="Top" Width="75" Click="btnStream_Click" Grid.Column="1"/>
+        <Button x:Name="btnStop" Content="Stop" HorizontalAlignment="Left" Margin="43,56,0,0" VerticalAlignment="Top" Width="75" Grid.Column="1"/>
+        <Button x:Name="btnRecord" Content="Record To File" HorizontalAlignment="Left" Margin="43,96,0,0" VerticalAlignment="Top" Width="97" Height="24" Grid.Column="1"/>
+        <Button x:Name="btnStopRecord" HorizontalAlignment="Left" Margin="43,156,0,0" VerticalAlignment="Top" Width="97" Height="24" RenderTransformOrigin="0.468,2.719" Grid.Column="1"/>
+        <CheckBox x:Name="checkboxFile" Content="Record To New File" HorizontalAlignment="Left" Margin="43,125,0,0" VerticalAlignment="Top" Grid.Column="1"/>
         <Label x:Name="tltLabel" Content="SoundData" HorizontalAlignment="Left" Margin="121,18,0,0" VerticalAlignment="Top"/>
 
         <s:SciChartSurface x:Name="sciChartSurface">
@@ -35,13 +38,13 @@
                     <s:NumericAxis.GrowBy>
                         <s:DoubleRange Max="0.1" Min="0.1" />
                     </s:NumericAxis.GrowBy>
-
                 </s:NumericAxis>
             </s:SciChartSurface.XAxis>
 
             <!--  Create a Y Axis  -->
             <s:SciChartSurface.YAxis>
-                <s:NumericAxis AutoRange="Always"
+                <s:NumericAxis Name="Yaxis"
+                               AutoRange="Never"
                                AxisTitle="Value"
                                DrawMinorGridLines="False"
                                DrawMinorTicks="False"

@@ -58,8 +58,8 @@ namespace LiveStethoV2
         {
             this.AudioOut = new WaveOut();
             this.AudioProvider = new BufferedWaveProvider(new WaveFormat(rate, bits, channels));
-            player.Init(audioprovider);  //Initialize directsoundout player
-            player.PlaybackStopped += new EventHandler<NAudio.Wave.StoppedEventArgs>(this.SoundPlayed); //Register Playback Stopped Handler
+            this.AudioOut.Init(this.AudioProvider);  //Initialize directsoundout player
+            this.AudioOut.PlaybackStopped += new EventHandler<NAudio.Wave.StoppedEventArgs>(this.SoundPlayed); //Register Playback Stopped Handler
 
         }
 
@@ -97,7 +97,7 @@ namespace LiveStethoV2
 
         private void AudioPlayerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            throw new NotImplementedException();
+            Console.WriteLine("BG Thread Completed");
         }
     }
 }
