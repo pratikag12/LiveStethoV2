@@ -53,7 +53,7 @@ namespace LiveStethoV2
             }
 
             //SerialDataIn = new SerialCom(SerialWait, 115200);
-            StethoPlayer = new AudioPlayer(16000, 16, 1);  //Audio Player Class
+            StethoPlayer = new AudioPlayer(15700, 16, 1);  //Audio Player Class
             //StethoOutFile = new WaveWriter(_outputwave, 16000, 16, 1); //Wave Writer Class
 
             //Remove this with serial stream added
@@ -119,7 +119,7 @@ namespace LiveStethoV2
                 {
                     SoundData.Append((i + 1) + shift, _trend);  //Add Values to the chart
                 }
-                
+
                 byte[] tempBytes = BitConverter.GetBytes(_trend); //convert int to 
                 Sound[i * 2] = tempBytes[0];
                 Sound[i * 2 + 1] = tempBytes[1];
