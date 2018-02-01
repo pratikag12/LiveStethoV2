@@ -21,22 +21,22 @@ namespace LiveStethoV2
         {
             this.AudioPlayerBG.WorkerReportsProgress = true;
             this.AudioPlayerBG.WorkerSupportsCancellation = true;
-            this.AudioPlayerBG.DoWork += new System.ComponentModel.DoWorkEventHandler(this.AudioPlayerWork);
-            this.AudioPlayerBG.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.AudioPlayerProgressChanged);
-            this.AudioPlayerBG.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.AudioPlayerCompleted);
+            this.AudioPlayerBG.DoWork += new DoWorkEventHandler(this.AudioPlayerWork);
+            this.AudioPlayerBG.ProgressChanged += new ProgressChangedEventHandler(this.AudioPlayerProgressChanged);
+            this.AudioPlayerBG.RunWorkerCompleted += new RunWorkerCompletedEventHandler(this.AudioPlayerCompleted);
 
             this._rate = rate; 
             this.InitializePlayer(rate, bits, channels);
         }
 
-        public IWavePlayer AudioOut
+        private IWavePlayer AudioOut
         {
             get {
                 return this.player;
             }
             set { player = value; }
         }
-        public BufferedWaveProvider AudioProvider
+        private BufferedWaveProvider AudioProvider
         {
             get
             {
@@ -45,7 +45,7 @@ namespace LiveStethoV2
             set { audioprovider = value; }
         }
 
-        public void AudioSyncSet()
+        private void AudioSyncSet()
         {
            this.AudioSync.Set();
         }
@@ -60,7 +60,6 @@ namespace LiveStethoV2
             this.AudioProvider = new BufferedWaveProvider(new WaveFormat(rate, bits, channels));
             this.AudioOut.Init(this.AudioProvider);  //Initialize directsoundout player
             this.AudioOut.PlaybackStopped += new EventHandler<NAudio.Wave.StoppedEventArgs>(this.SoundPlayed); //Register Playback Stopped Handler
-
         }
 
         public void Play()
@@ -79,7 +78,7 @@ namespace LiveStethoV2
             Console.WriteLine("NAudio Finished Sound Playing");
         }
 
-        public void AudioPlayerWork(object sender, DoWorkEventArgs e)
+        private void AudioPlayerWork(object sender, DoWorkEventArgs e)
         {
             while (true) //TODO, change to more legitimate playing
             {
