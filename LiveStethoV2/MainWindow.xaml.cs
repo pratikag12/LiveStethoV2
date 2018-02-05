@@ -15,6 +15,7 @@ using SciChart.Data.Model;
 using System.Reactive.Linq;
 using System.Reactive;
 using NAudio.Wave;
+using System.Reactive.Concurrency;
 
 namespace LiveStethoV2
 {
@@ -82,12 +83,12 @@ namespace LiveStethoV2
 			var dataStream = clickStream.SelectMany(e => Observable.Interval(TimeSpan.FromSeconds(1)))
 				.Select(count => (reader.ReadBytes(_chunkSize * sizeof(short)), count));
 
-			dataStream.Subscribe(values => {
+			dataStream.SubscribeOn(NewThreadScheduler.Default).Subscribe(values => {
 				// play
 				StethoPlayer.AddData(values.Item1);
 				StethoPlayer.Play();
 			});
-			dataStream.Subscribe(values => {
+			dataStream.SubscribeOn(NewThreadScheduler.Default).Subscribe(values => {
 				// draw
 				short[] s = new short[values.Item1.Length / 2];
 				Buffer.BlockCopy(values.Item1, 0, s, 0, values.Item1.Length);
