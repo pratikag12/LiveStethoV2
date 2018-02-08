@@ -15,6 +15,7 @@ using SciChart.Data.Model;
 using System.Reactive.Linq;
 using System.Reactive;
 using NAudio.Wave;
+using System.Reactive.Concurrency;
 using System.Linq;
 
 namespace LiveStethoV2
@@ -90,7 +91,7 @@ namespace LiveStethoV2
             var SoundStream = dataStream.Buffer(100);
 
             
-            SoundStream.Subscribe(values => {
+            SoundStream.SubscribeOn(NewThreadScheduler.Default).Subscribe(values => {
                 // play
                 Console.WriteLine("Playing Started");
                 Sthetho.IsStreaming = true;
@@ -112,7 +113,7 @@ namespace LiveStethoV2
 
             });
            
-            dataStream.Subscribe(values => {
+            dataStream.SubscribeOn(NewThreadScheduler.Default).Subscribe(values => {
                 // draw
                 short[] s = new short[values.Item1.Length / 2];
 
@@ -138,7 +139,7 @@ namespace LiveStethoV2
 			sr = new BinaryReader(File.Open(inputfile, FileMode.Open));
 		}
 
-        
+       
 		//--------------------------------------------------------------------->
 
 		//Graphing Library
