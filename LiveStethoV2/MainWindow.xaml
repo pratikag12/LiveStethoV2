@@ -5,21 +5,27 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:s="http://schemas.abtsoftware.co.uk/scichart"
         mc:Ignorable="d"
-        Title="MainWindow" Height="400" Width="600"
-        Background="Black">
-    <Grid>
+        Title="MainWindow" Height="402" Width="805"
+        Background="#FF323131" Foreground="#FF343434">
+    <Grid Margin="0,0,2,6">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="367*"/>
             <ColumnDefinition Width="150*"/>
         </Grid.ColumnDefinitions>
 
-
-        <Button x:Name="btnStream" Content="Stream" HorizontalAlignment="Left" Margin="43,21,0,0" VerticalAlignment="Top" Width="75" Grid.Column="1"/>
-        <Button x:Name="btnStop" Content="Stop" HorizontalAlignment="Left" Margin="43,56,0,0" VerticalAlignment="Top" Width="75" Grid.Column="1"/>
-        <Button x:Name="btnRecord" Content="Record To File" HorizontalAlignment="Left" Margin="43,96,0,0" VerticalAlignment="Top" Width="97" Height="24" Grid.Column="1"/>
-        <Button x:Name="btnStopRecord" HorizontalAlignment="Left" Margin="43,156,0,0" VerticalAlignment="Top" Width="97" Height="24" RenderTransformOrigin="0.468,2.719" Grid.Column="1"/>
-        <CheckBox x:Name="checkboxFile" Content="Record To New File" HorizontalAlignment="Left" Margin="43,125,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-        <Label x:Name="tltLabel" Content="SoundData" HorizontalAlignment="Left" Margin="121,18,0,0" VerticalAlignment="Top"/>
+        <Button x:Name="btnStream" Command ="{Binding StreamCommand}"  CommandParameter ="{Binding IsStreaming}" Content="Stream" HorizontalAlignment="Left" Margin="43,21,0,0" VerticalAlignment="Top" Width="138" Grid.Column="1" Height="23"/>
+        <Button x:Name="btnStop" Content="Stop" HorizontalAlignment="Left" Margin="43,56,0,0" VerticalAlignment="Top" Width="138" Grid.Column="1" Height="22"/>
+        <Button x:Name="btnClear" Content ="Clear Chart" HorizontalAlignment="Left" Margin="44,93,0,0" VerticalAlignment="Top" Width="134" Height="22" RenderTransformOrigin="0.468,2.719" Grid.Column="1">
+            <Button.RenderTransform>
+                <TransformGroup>
+                    <ScaleTransform/>
+                    <SkewTransform AngleX="2.203"/>
+                    <RotateTransform/>
+                    <TranslateTransform X="2.51"/>
+                </TransformGroup>
+            </Button.RenderTransform>
+        </Button>
+        <CheckBox x:Name="checkboxFile" Content="Record To New File" HorizontalAlignment="Right" Margin="0,188,66,0" VerticalAlignment="Top" Grid.Column="1" Background="White" BorderBrush="Black" Foreground="White"/>
 
         <s:SciChartSurface x:Name="sciChartSurface">
             <!--  Create a RenderableSeries, which map 1:1 to the DataSeries created in code-behind  -->
@@ -64,8 +70,10 @@
                     <s:MouseWheelZoomModifier/>
                     <s:ZoomExtentsModifier ExecuteOn="MouseDoubleClick" />
                 </s:ModifierGroup>
-            </s:SciChartSurface.ChartModifier> 
+            </s:SciChartSurface.ChartModifier>
         </s:SciChartSurface>
+        <TextBox Grid.Column="1" HorizontalAlignment="Left" Height="24" Margin="47,150,0,0" TextWrapping="Wrap" Text="SthetoSounds.wav" VerticalAlignment="Top" Width="134"/>
+        <Label Content="File Name" Grid.Column="1" HorizontalAlignment="Left" Margin="47,123,0,0" VerticalAlignment="Top" Height="27" Width="122" Background="{x:Null}" Foreground="White"/>
 
     </Grid>
 </Window>

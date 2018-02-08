@@ -15,94 +15,120 @@ using SciChart.Data.Model;
 using System.Reactive.Linq;
 using System.Reactive;
 using NAudio.Wave;
+using System.Linq;
 
 namespace LiveStethoV2
 {
-	/// <summary>
-	/// Interaction logic for MainWindow.xaml
-	/// </summary>
-	public partial class MainWindow : Window
-	{
-		//Graphing(TODO)---------------------------------------
-		private IXyDataSeries<long, short> SoundData;
-		private int GlobalBlock = 0;
-		private int Capacity = 4;
+    /// <summary>
+    /// Interaction logic for MainWindow.xaml
+    /// </summary>
+    public partial class MainWindow : Window
+    {
+        //Graphing(TODO)---------------------------------------
+        private IXyDataSeries<long, short> SoundData;
+        private int GlobalBlock = 0;
+        private int Capacity = 8;
 
-		//Binary Reader (TODO: temp)-----------------------------------------
-		private const int _chunkSize = 16000;
-		public byte[] Sound = new byte[16000 * 2];  //1 Sec of Buffered Sound Data
-		public BinaryReader sr;
-		public string inputfile = @"./TestAudio.dat";
+        //Binary Reader (TODO: temp)-----------------------------------------
+        private const int _chunkSize = 16000;
+        public byte[] Sound = new byte[16000 * 2];  //1 Sec of Buffered Sound Data
+        public BinaryReader sr;
+        public string inputfile = @"./TestAudio.dat";
 
-		//Audio Player Classes--------------------------------------------
-		AudioPlayer StethoPlayer;
+        //Audio Player Classes--------------------------------------------
+        AudioPlayer StethoPlayer;
 
-		//Wave Writer Class------------------------------------------------
-		WaveWriter StethoOutFile;
-		const string _outputwave = @"D:\Stethoscope Test Data\OutputAudio";
+        //Wave Writer Class------------------------------------------------
+        WaveWriter StethoOutFile;
+        const string _outputwave = @"D:\Stethoscope Test Data\OutputAudio";
 
-		//Serial Data In---------------------------------------------------
-		SerialCom SerialDataIn;
-		private ManualResetEvent SerialWait = new ManualResetEvent(false);
+        //Serial Data In---------------------------------------------------
+        SerialCom SerialDataIn;
+        private ManualResetEvent SerialWait = new ManualResetEvent(false);
 
-		public MainWindow()
-		{
-			try
-			{
-				InitializeComponent();
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine(ex.Message);
-			}
+        //View Model
+        StethoViewModel Sthetho;
 
-			//SerialDataIn = new SerialCom(SerialWait, 115200);
-			StethoPlayer = new AudioPlayer(15277, 16, 1);  //Audio Player Class
-														   //StethoOutFile = new WaveWriter(_outputwave, 16000, 16, 1); //Wave Writer Class
+        public MainWindow()
+        {
+            try
+            {
+                InitializeComponent();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
 
-			//Remove this with serial stream added
-			//OpenFile();
+            //SerialDataIn = new SerialCom(SerialWait, 115200);
+            StethoPlayer = new AudioPlayer(16000, 16, 1);  //Audio Player Class
+                                                           //StethoOutFile = new WaveWriter(_outputwave, 16000, 16, 1); //Wave Writer Class
 
-			//Graphing Add In Code-Behind
-			SoundData = new XyDataSeries<long, short>();
-			SoundData.FifoCapacity = this.Capacity * 16000;
-			SoundSeries.DataSeries = SoundData;
-			Yaxis.VisibleRange = new DoubleRange(-32000, 32000);
+            //Remove this with serial stream added
+            //OpenFile();
 
-			Init();
-		}
+            //Graphing Add In Code-Behind
+            SoundData = new XyDataSeries<long, short>();
+            SoundData.FifoCapacity = this.Capacity * 16000;
+            SoundSeries.DataSeries = SoundData;
+            Yaxis.VisibleRange = new DoubleRange(-32000, 32000);
 
-		private void Init() {
-			var reader = new BinaryReader(File.Open(inputfile, FileMode.Open));
+            Sthetho = new StethoViewModel(() => Init());
+;            this.DataContext = Sthetho;
+            Sthetho.IsStreaming = false;
 
-			var clickStream = Observable.FromEventPattern<RoutedEventHandler, RoutedEventArgs>(
-				x => btnStream.Click += x,
-				x => btnStream.Click -= x);
+           
+        } 
 
-			var dataStream = clickStream.SelectMany(e => Observable.Interval(TimeSpan.FromSeconds(1)))
-				.Select(count => (reader.ReadBytes(_chunkSize * sizeof(short)), count));
+        private void Init() {
+            var reader = new BinaryReader(File.Open(inputfile, FileMode.Open));
+            Sthetho.IsStreaming = true;
+            Console.WriteLine("Running graphing system");
+            var dataStream = Observable.Interval(TimeSpan.FromMilliseconds(10))
+                .Select(count =>  (reader.ReadBytes(160 * sizeof(short)), count));
 
-			dataStream.Subscribe(values => {
-				// play
-				StethoPlayer.AddData(values.Item1);
-				StethoPlayer.Play();
-			});
-			dataStream.Subscribe(values => {
-				// draw
-				short[] s = new short[values.Item1.Length / 2];
-				Buffer.BlockCopy(values.Item1, 0, s, 0, values.Item1.Length);
-				int shift = 0;
-				using (sciChartSurface.SuspendUpdates())
-				{
-					foreach (short i in s)
-					{
-						SoundData.Append(_chunkSize * values.Item2 + shift++, i);
-					}
-				}
-			});
-		}
+            var SoundStream = dataStream.Buffer(100);
 
-		//Temporay Open File--------------------------------------------------->
+            
+            SoundStream.Subscribe(values => {
+                // play
+                Console.WriteLine("Playing Started");
+                Sthetho.IsStreaming = true;
+                List<byte[]> temp1 = values.Select(t => t.Item1).ToList();
+                byte[] temp2 = temp1.SelectMany(a => a).ToArray();
+                Console.WriteLine(temp2.Count());
+                try
+                {
+                    StethoPlayer.AddData(temp2);
+                    StethoPlayer.Play(); 
+                }
+                catch(Exception ex)
+                {
+                    Console.WriteLine("Audio Playing Exception Occured");
+                    Console.WriteLine(ex);
+                }
+
+                Console.WriteLine("Playing observer on next exit");
+
+            });
+           
+            dataStream.Subscribe(values => {
+                // draw
+                short[] s = new short[values.Item1.Length / 2];
+
+                Buffer.BlockCopy(values.Item1, 0, s, 0, values.Item1.Length);
+                int shift = 0;
+                using (sciChartSurface.SuspendUpdates())
+                {
+                    foreach (short i in s)
+                    {
+                        SoundData.Append(_chunkSize * values.Item2 + shift++, i);
+                    }
+                }
+            });
+        }
+
+        //Temporay Open File--------------------------------------------------->
 		public void OpenFile()
 		{
 			if (!File.Exists(inputfile))
@@ -112,6 +138,7 @@ namespace LiveStethoV2
 			sr = new BinaryReader(File.Open(inputfile, FileMode.Open));
 		}
 
+        
 		//--------------------------------------------------------------------->
 
 		//Graphing Library
