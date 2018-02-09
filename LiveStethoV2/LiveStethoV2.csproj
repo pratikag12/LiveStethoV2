@@ -110,6 +110,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="GraphCommand.cs" />
+    <Compile Include="MultimediaTimer.cs" />
     <Compile Include="SerialCom.cs" />
     <Compile Include="SoundGraphing.cs" />
     <Compile Include="StethoViewModel.cs" />

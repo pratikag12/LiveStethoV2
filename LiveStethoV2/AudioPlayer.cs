@@ -42,7 +42,9 @@ namespace LiveStethoV2
             {
                 return this.audioprovider;
             }
-            set { audioprovider = value; }
+            set { audioprovider = value;
+				//audioprovider.BufferDuration = TimeSpan.FromMinutes(1);
+			}
         }
 
         private void AudioSyncSet()
@@ -52,7 +54,7 @@ namespace LiveStethoV2
 
         public void AddData(byte[] data)
         {
-            this.audioprovider.AddSamples(data, 0, this._rate * 2);
+            this.audioprovider.AddSamples(data, 0, data.Length);
         }
         private void InitializePlayer(int rate, int bits, int channels)
         {
