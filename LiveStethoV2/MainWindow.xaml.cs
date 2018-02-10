@@ -52,6 +52,9 @@ namespace LiveStethoV2
 		StethoViewModel Sthetho;
 
 		private int plotCount = 0;
+		FileStream fs = null;
+		BinaryReader reader = null;
+		MultimediaTimer timer = new MultimediaTimer() { Interval = 1 };
 
 		public MainWindow()
 		{
@@ -80,10 +83,13 @@ namespace LiveStethoV2
 			Sthetho = new StethoViewModel(() => Init());
 			this.DataContext = Sthetho;
 			Sthetho.IsStreaming = false;
+
+			fs = File.Open(inputfile, FileMode.Open);
+			reader = new BinaryReader(fs);
 		}
 
-		private void Init() {
-			var reader = new BinaryReader(File.Open(inputfile, FileMode.Open));
+		private void Init()
+		{
 			//Sthetho.IsStreaming = true;
 
 			var waveOut = new WaveOut();
@@ -95,12 +101,25 @@ namespace LiveStethoV2
 
 			var dataStream = Observable.Create<byte[]>(ob =>
 			{
-				var timer = new MultimediaTimer() { Interval = 1 };
-				timer.Elapsed += (source, e) => reader.ReadBytes(32);
+				timer.Elapsed += (source, e) =>
+				{
+					if (reader.BaseStream.Position < reader.BaseStream.Length)
+					{
+						Console.WriteLine("timer: " + reader.BaseStream.Position.ToString() + " - " + reader.BaseStream.Length.ToString());
+						ob.OnNext(reader.ReadBytes(32));
+						Console.WriteLine("timer: readed");
+					}
+					else
+					{
+						Console.WriteLine("timer: ready to stop");
+						timer.Stop();
+						Console.WriteLine("timer: stopped");
+					}
+				};
 				timer.Start();
-				return timer;
+				return Disposable.Empty;
 			}).Publish();
-			
+
 			dataStream
 				.Buffer(1000)
 				.SubscribeOn(NewThreadScheduler.Default)
@@ -136,6 +155,7 @@ namespace LiveStethoV2
 				.SubscribeOn(NewThreadScheduler.Default)
 				.Subscribe(values =>
 				{
+					Console.WriteLine("draw: begin");
 					// draw
 					var res = values.SelectMany(i => i).ToArray();
 					short[] s = new short[res.Length / 2];
@@ -148,6 +168,7 @@ namespace LiveStethoV2
 							SoundData.Append(plotCount++, i);
 						}
 					}
+					Console.WriteLine("draw: end");
 				});
 
 			dataStream.Connect();
