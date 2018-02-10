@@ -92,22 +92,14 @@ namespace LiveStethoV2
 			Console.WriteLine("Running graphing system");
 
 			//var dataStream = Observable.Interval(TimeSpan.FromMilliseconds(100))
-			var timer = new MultimediaTimer() { Interval = 1 };
-			var ob = new List<IObserver<byte[]>>();
-			timer.Elapsed += (source, e) =>
-			{
-				var d = reader.ReadBytes(32);
-				foreach (var oo in ob.ToArray())
-					oo.OnNext(d);
 
-			};
-			timer.Start();
-
-			var dataStream = Observable.Create<byte[]>(o =>
+			var dataStream = Observable.Create<byte[]>(ob =>
 			{
-				ob.Add(o);
-				return Disposable.Empty;
-			});
+				var timer = new MultimediaTimer() { Interval = 1 };
+				timer.Elapsed += (source, e) => reader.ReadBytes(32);
+				timer.Start();
+				return timer;
+			}).Publish();
 			
 			dataStream
 				.Buffer(1000)
@@ -157,6 +149,8 @@ namespace LiveStethoV2
 						}
 					}
 				});
+
+			dataStream.Connect();
 		}
 
 		//Temporay Open File--------------------------------------------------->
