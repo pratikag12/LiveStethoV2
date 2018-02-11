@@ -71,10 +71,10 @@ namespace LiveStethoV2
 			SoundData = new XyDataSeries<int, short>();
 			SoundData.FifoCapacity = this.Capacity * 16000;
 			SoundSeries.DataSeries = SoundData;
-			Yaxis.VisibleRange = new DoubleRange(-32000, 32000);
+			YAxis.VisibleRange = new DoubleRange(-32000, 32000);
 
             //View Model Update
-			Sthetho = new StethoViewModel(Init, Stop, Clear);
+            Sthetho = new StethoViewModel(Init, Stop, Clear);
 			this.DataContext = Sthetho;
 			Sthetho.IsStreaming = false;
 
@@ -90,8 +90,14 @@ namespace LiveStethoV2
 
             //Open File For Writing
             Sthetho.OutFileName = "StethoSound";
-            Sthetho.WriteToFile = false; 
-           
+            Sthetho.WriteToFile = true;
+
+            VertAnnotate.CoordinateMode = SciChart.Charting.Visuals.Annotations.AnnotationCoordinateMode.Absolute;
+            VertAnnotate.Y1 = -32000;
+            VertAnnotate.VerticalAlignment = VerticalAlignment.Top;
+            Sthetho.AnnotationX = 0;
+
+
         }
 
 		private void Init()
@@ -155,8 +161,8 @@ namespace LiveStethoV2
 					StethoPlayer.AddData(res);
                     if(Sthetho.WriteToFile)
                         StethoOutFile.WriteData(res);  //Write Data to File                    
-                    StethoPlayer.Play();
-				});
+                    StethoPlayer.Play();                   
+                });
 
             //Graphing
 			dataStream
@@ -174,7 +180,9 @@ namespace LiveStethoV2
 					{
 						foreach (short i in s)
 						{
-							SoundData.Append(plotCount++, i);
+                            if(StethoPlayer.PlayBackState == PlaybackState.Playing)
+                                Sthetho.AnnotationX = plotCount - (16000);
+                            SoundData.Append(plotCount++, i);
 						}
 					}
 					Console.WriteLine("draw: end");

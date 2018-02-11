@@ -14,7 +14,6 @@ namespace LiveStethoV2
         private readonly BackgroundWorker AudioPlayerBG = new BackgroundWorker(); //New Bg Worker
         private IWavePlayer player;        //Wave Out Player
         private BufferedWaveProvider audioprovider;  //Ram Stream
-        private ManualResetEvent AudioSync = new ManualResetEvent(false);  //Sync Construct
         private int _rate; 
 
         public AudioPlayer(int rate, int bits, int channels)
@@ -47,10 +46,6 @@ namespace LiveStethoV2
 			}
         }
 
-        private void AudioSyncSet()
-        {
-           this.AudioSync.Set();
-        }
 
         public void AddData(byte[] data)
         {
@@ -70,10 +65,6 @@ namespace LiveStethoV2
             {
                 this.AudioPlayerBG.RunWorkerAsync();
             }
-            else
-            {
-               // this.AudioSyncSet();  //Indicate to Continue Play
-            }
         }
         private void SoundPlayed(object sender, StoppedEventArgs data)
         {
@@ -82,10 +73,12 @@ namespace LiveStethoV2
 
         private void AudioPlayerWork(object sender, DoWorkEventArgs e)
         {
-            while (true) //TODO, change to more legitimate playing
-            {
-                player.Play();
-            }
+             player.Play();               
+        }
+
+        public PlaybackState PlayBackState
+        {
+            get { return player.PlaybackState; }
         }
 
         private void AudioPlayerProgressChanged(object sender, ProgressChangedEventArgs e)
