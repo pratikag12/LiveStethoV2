@@ -13,16 +13,16 @@ namespace LiveStethoV2
     class SerialCom
     {
         private SerialPort SerialFTDI;
-        private ManualResetEvent SerialWait;
 
-        public SerialCom(ManualResetEvent SerialWait, int BaudRate)
+
+        public SerialCom(int BaudRate)
         {
             this.SerialFTDI = new SerialPort();
-            this.SerialWait = SerialWait;
-
-            //SEt Parameters Value
             this.SerialFTDI.BaudRate = BaudRate;                       //Serial Port Speed
             this.SerialFTDI.ReadBufferSize = 2048;
+            this.SerialFTDI.DataBits = 8;
+            this.SerialFTDI.StopBits = StopBits.One;
+            this.SerialFTDI.Parity = Parity.None;
         }
 
         public SerialPort SerialPortFTDI
@@ -61,16 +61,6 @@ namespace LiveStethoV2
             }
         }
 
-        public void ProcessUartCommand(string Command, int Timeout)
-        {
-            this.SerialWait.Reset(); //Reset Serial Handler
-            this.SerialFTDI.DataReceived += new SerialDataReceivedEventHandler(this.SerialFTDIRxHandler);
-            WriteByteToSerialPort(Command);
-            this.SerialWait.WaitOne(Timeout);
-            this.SerialFTDI.DataReceived -= new SerialDataReceivedEventHandler(this.SerialFTDIRxHandler);
-            this.SerialFTDI.DiscardInBuffer();
-            this.SerialFTDI.DiscardOutBuffer();
-        }
 
         public bool WriteByteToSerialPort(string data)                   //Write Byte to UART Serial Port
         {

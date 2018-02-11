@@ -72,7 +72,7 @@ namespace LiveStethoV2
             }
             else
             {
-                this.AudioSyncSet();  //Indicate to Continue Play
+               // this.AudioSyncSet();  //Indicate to Continue Play
             }
         }
         private void SoundPlayed(object sender, StoppedEventArgs data)
@@ -84,10 +84,7 @@ namespace LiveStethoV2
         {
             while (true) //TODO, change to more legitimate playing
             {
-                //Waite For Manual Reset Event
                 player.Play();
-                this.AudioSync.Reset();
-                //this.AudioSync.WaitOne(); //Wait For Set Event
             }
         }
 

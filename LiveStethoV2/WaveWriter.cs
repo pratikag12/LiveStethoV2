@@ -12,14 +12,15 @@ namespace LiveStethoV2
 {
     class WaveWriter
     {
-        private string _OutputLocation;
+        private string _OutputLocation = @"D:\Stethoscope Test Data\";
         private WaveFileWriter WaveFileOut;
         private FileStream fs;
-        int _rate; 
+        int _rate;
+
 
         public WaveWriter(string OutputFile, int rate, int bits, int channels)
         {
-            this._OutputLocation = OutputFile + 
+            this._OutputLocation += OutputFile + "_"+
                 GenerateDateTime(0) + "_" + GenerateDateTime(1) +".wav";  //Custom Date and Time
             this.InitWaveFileWriter(rate, bits, channels);
             this._rate = rate; 

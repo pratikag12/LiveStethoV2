@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
 
 namespace LiveStethoV2
@@ -11,18 +12,27 @@ namespace LiveStethoV2
     class StethoViewModel : INotifyPropertyChanged
     {
         private bool _IsStreaming;
-        Action GraphFunc; 
+        private bool _WriteToFile;
+        private string _outFilename; 
+        public GraphCommand StreamCommand { get; set; }
+        public GraphCommand StopCommand { get; set; }
+        public GraphCommand ClearCommand { get; set; }
 
-        public StethoViewModel(Action act)
+        public StethoViewModel(Action StreamAct, Action StopAct, Action ClearAct)
         {
-            GraphFunc = act; 
-            StreamCommand = new GraphCommand(this); 
-        }
+            StreamCommand = new GraphCommand(() => StreamAct()
+            , (x) =>
+            {
+                if (Convert.ToBoolean(x))
+                    return false;
+                return true;
+            });
 
-        public ICommand StreamCommand
-        {
-            get;
-            set;
+            StopCommand = new GraphCommand(() => StopAct(),
+            (x) => Convert.ToBoolean(x));
+
+            ClearCommand = new GraphCommand(() => ClearAct());
+
         }
 
         public bool IsStreaming
@@ -38,11 +48,32 @@ namespace LiveStethoV2
             }
         }
 
-        public void StartStreaming()
+        public string OutFileName
         {
-            //Start Graphing
-            GraphFunc();
-            
+            get { return _outFilename; }
+            set { _outFilename = value;
+                this.TestBoxValidate();
+                OnPropertyChanged("OutFileName");
+            }
+        }
+    
+        private void TestBoxValidate()
+        {
+            if (this.OutFileName.Contains(".")|| this.OutFileName.Contains(@"/")
+                || this.OutFileName.Contains(@"\"))
+            {
+                MessageBox.Show("Invalid Filename");
+                this.OutFileName = "StethoSound";
+            }
+        }
+
+        public bool WriteToFile
+        {
+            get { return _WriteToFile; }
+            set {
+                _WriteToFile = value;
+                OnPropertyChanged("WriteToFile");
+            }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

@@ -10,26 +10,38 @@ namespace LiveStethoV2
     class GraphCommand : ICommand
     {
 
-        private StethoViewModel _viewmodel { get; set; }
-        public GraphCommand(StethoViewModel ViewModel)
+        readonly Action _execute;
+        readonly Predicate<object> _canExecute;
+
+        public GraphCommand(Action execute, Predicate<object> canExecute)
         {
-            _viewmodel = ViewModel;
+            if (execute == null)
+                throw new NullReferenceException("execute");
+            _execute = execute;
+            _canExecute = canExecute;
 
         }
 
+        public GraphCommand(Action execute) : this(execute, null)
+        {
+             
+        }
+
         #region ICommand Interface
-        public event EventHandler CanExecuteChanged;
+        public event EventHandler CanExecuteChanged
+        {
+            add { CommandManager.RequerySuggested += value; }
+            remove { CommandManager.RequerySuggested -= value; }
+        }
 
         public bool CanExecute(object parameter)
         {
-            if (!Convert.ToBoolean(parameter))
-                return true;
-            return false;
+            return _canExecute == null ? true : _canExecute(parameter);
         }
 
         public void Execute(object parameter)
         {
-            _viewmodel.StartStreaming(); 
+            _execute.Invoke();
         }
         #endregion
     }
