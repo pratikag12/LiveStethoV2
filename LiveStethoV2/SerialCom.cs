@@ -14,15 +14,15 @@ namespace LiveStethoV2
     {
         private SerialPort SerialFTDI;
 
-
-        public SerialCom(int BaudRate)
+        public SerialCom(int BaudRate, string portname)
         {
             this.SerialFTDI = new SerialPort();
             this.SerialFTDI.BaudRate = BaudRate;                       //Serial Port Speed
-            this.SerialFTDI.ReadBufferSize = 2048;
+            this.SerialFTDI.ReadBufferSize = 32768;
             this.SerialFTDI.DataBits = 8;
             this.SerialFTDI.StopBits = StopBits.One;
             this.SerialFTDI.Parity = Parity.None;
+            this.SerialFTDI.PortName = portname;
         }
 
         public SerialPort SerialPortFTDI
@@ -82,12 +82,6 @@ namespace LiveStethoV2
             result = true;
             return result;
         }
-
-        public void SerialFTDIRxHandler(object sender, SerialDataReceivedEventArgs e)
-        {
-
-        }
-
     }
 
 }
