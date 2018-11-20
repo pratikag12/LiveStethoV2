@@ -13,6 +13,7 @@ namespace LiveStethoV2
     {
         private bool _IsStreaming;
         private bool _WriteToFile;
+        private bool _FilterHeart;
         private string _outFilename;
         private IComparable _AnnoationX;
         public GraphCommand StreamCommand { get; set; }
@@ -77,6 +78,16 @@ namespace LiveStethoV2
             }
         }
 
+        public bool FilterHeart
+        {
+            get { return _FilterHeart; }
+            set
+            {
+                _FilterHeart = value;
+                OnPropertyChanged("FilterHeart");
+            }
+        }
+
         public IComparable AnnotationX
         {
             get { return _AnnoationX; }
@@ -90,6 +101,7 @@ namespace LiveStethoV2
         {
             if (PropertyChanged != null)
                 PropertyChanged.Invoke(this, new PropertyChangedEventArgs(propertyName));
+ 
         }
     }
 }

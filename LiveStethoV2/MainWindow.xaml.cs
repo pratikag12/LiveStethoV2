@@ -19,6 +19,9 @@ using System.Reactive.Concurrency;
 using System.Linq;
 using System.Reactive.Disposables;
 using NAudio;
+using MathNet.Filtering;
+using RestSharp;
+using Newtonsoft;
 
 namespace LiveStethoV2
 {
@@ -30,15 +33,15 @@ namespace LiveStethoV2
 		//Graphing---------------------------------------
 		private IXyDataSeries<int, short> SoundData;
         private int plotCount = 0;
-		private int Capacity = 8;
+		private int Capacity = 10;
         List<byte> SoundBuffer = new List<byte>();
    
 		//Binary Reader (TODO: temp)-----------------------------------------
 		private const int _chunkSize = 16000;
         public BinaryReader reader = null;
-        
-		//Audio Player Classes--------------------------------------------
-		AudioPlayer StethoPlayer;
+        string inputfile = "Somethingelse";
+        //Audio Player Classes--------------------------------------------
+        AudioPlayer StethoPlayer;
 
         //Wave Writer Class------------------------------------------------
         //private WaveWriter StethoOutFile;
@@ -55,9 +58,15 @@ namespace LiveStethoV2
 
         //Hi Resolution Timer
         //MultimediaTimer timer;
-        
 
-		public MainWindow()
+        //Filter Object
+        double fc1 = 50; //low cutoff frequency
+        double fc2 = 250; //high cutoff frequency
+        double samplerate = 15277;
+        OnlineFilter BandPassfilter;
+        OnlineFilter Denoiser;
+
+        public MainWindow()
 		{
 			try
 			{
@@ -68,8 +77,7 @@ namespace LiveStethoV2
 				Console.WriteLine(ex.Message);
 			}
 
-			
-							//StethoOutFile = new WaveWriter(_outputwave, 16000, 16, 1); //Wave Writer Class
+			//StethoOutFile = new WaveWriter(_outputwave, 16000, 16, 1); //Wave Writer Class
 			//Graphing Add In Code-Behind
 			SoundData = new XyDataSeries<int, short>();
 			SoundData.FifoCapacity = this.Capacity * 16000;
@@ -77,8 +85,9 @@ namespace LiveStethoV2
 			YAxis.VisibleRange = new DoubleRange(-32000, 32000);
 
             //View Model Update
-            Sthetho = new StethoViewModel(Init, Stop, Clear);
-			this.DataContext = Sthetho;
+            //Sthetho = new StethoViewModel(Init, Stop, Clear);
+            Sthetho = new StethoViewModel(RestCommGet, Stop, RestCommGetFile);
+            this.DataContext = Sthetho;
 			Sthetho.IsStreaming = false;
 
             //Open File (Remove for serial Stream)
@@ -88,7 +97,7 @@ namespace LiveStethoV2
             StethoPlayer = new AudioPlayer(15277, 16, 1);
 
             //Open Serial Port
-            SerialDataIn = new SerialCom(921600, "COM17");
+            SerialDataIn = new SerialCom(921600, "COM8");
             //SerialDataIn.OpenSerialPort();
 
             //Open File For Writing
@@ -99,6 +108,41 @@ namespace LiveStethoV2
             VertAnnotate.Y1 = -32000;
             VertAnnotate.VerticalAlignment = VerticalAlignment.Top;
             Sthetho.AnnotationX = 0;
+
+            //Create filter objects
+            BandPassfilter = OnlineFilter.CreateHighpass(ImpulseResponse.Finite, samplerate, fc1);
+            Denoiser = OnlineFilter.CreateDenoise(25);
+        }
+
+     
+        //Test Function
+        private void RestCommGet()
+        {
+            //Call Rest Api
+            RestClient TestBe = new RestClient("http://127.0.0.1:5000/");
+            RestRequest req = new RestRequest("get/{name}", Method.GET);
+            req.AddUrlSegment("name", "bear");
+            IRestResponse resp = TestBe.Execute(req);
+            JsonData respobj = Newtonsoft.Json.JsonConvert.DeserializeObject<JsonData>(resp.Content);
+            MessageBox.Show(respobj.data);
+        }
+
+        private void RestCommGetFile()
+        {
+            //Call Rest Api
+            RestClient TestBe = new RestClient("http://127.0.0.1:5000/");
+            RestRequest req = new RestRequest("get/{name}", Method.GET);
+            req.AddUrlSegment("name", "bear");
+            IRestResponse resp = TestBe.Execute(req);
+            Console.WriteLine(resp.ContentLength);
+            tmpFile = File.OpenWrite(@"D:\Test Data S\CDLData\StethoStream.bin");
+            tmpFile.Write(resp.RawBytes, 0, (int) resp.ContentLength);
+            tmpFile.Close();
+        }
+
+        class JsonData
+        {
+            public string data; 
         }
 
 		private void Init()  
@@ -111,7 +155,7 @@ namespace LiveStethoV2
             if (Sthetho.WriteToFile)
             {
                //StethoOutFile = new WaveWriter(Sthetho.OutFileName, 15277, 16, 1);
-               tmpFile = File.OpenWrite("dump.bin"); }
+                 tmpFile = File.OpenWrite(@"D:\Test Data S\CDLData\StethoStream.bin"); }
            
             //timer = new MultimediaTimer() { Interval = 1 };
             
@@ -159,16 +203,19 @@ namespace LiveStethoV2
 
             // Save to file
             if (Sthetho.WriteToFile)
-            { dataStream.Subscribe(data => tmpFile.WriteByte(data)); }
+            { dataStream.Subscribe(data => {
+                tmpFile.WriteByte(data);
+                tmpFile.Flush();
+                }); }
 
+     
             ////Audio Playback
-            //dataStream
-            //    .Buffer(512)
-            //    .Subscribe(values =>
-            //    {
-            //        StethoPlayer.AddData(values.ToArray());
-            //        StethoPlayer.Play();
-            //    });
+            /*dataStream
+                .Buffer(512)
+               .Subscribe(values =>
+                    { StethoPlayer.AddData(values.ToArray());
+                    StethoPlayer.Play();
+                });*/
 
             //Graphing
             dataStream
@@ -183,14 +230,23 @@ namespace LiveStethoV2
                         foreach (var v in values)
                         {
                             short s = BitConverter.ToInt16(new byte[2] { (byte)v[1], (byte)v[0] }, 0);
-                            if (StethoPlayer.PlayBackState == PlaybackState.Playing)
-                                Sthetho.AnnotationX = plotCount - (16000);
-                            SoundData.Append(plotCount++, s);
+                            //if (StethoPlayer.PlayBackState == PlaybackState.Playing)
+                            //Sthetho.AnnotationX = plotCount - (16000);
+                            if (Sthetho.FilterHeart)
+                            {
+                                SoundData.Append(plotCount++, (short)Denoiser.ProcessSample(BandPassfilter.ProcessSample((double)s)));
+                                //SoundData.Append(plotCount++, (short)(double)s));
+                            }
+                            else
+                            {
+                                SoundData.Append(plotCount++,  s);
+                            }
                         }
                     }
                 });
+            
 
-            //File Writing
+            //File Writing      
             /*
             dataStream.Buffer(2000).SubscribeOn(NewThreadScheduler.Default)
                 .Subscribe(values =>
@@ -199,7 +255,7 @@ namespace LiveStethoV2
                     StethoOutFile.WriteData(res);
                 }
                 );
-                */
+              */  
 
             dataStream.Connect();
 		}
@@ -207,14 +263,15 @@ namespace LiveStethoV2
         private void Stop()
         {
             //if (timer.IsRunning)
-                //timer.Stop();
-            if (StethoOutFile != null)
-                StethoOutFile.CloseFile();
-            Sthetho.IsStreaming = false;  //Tell UI To Stop Streaming
+            //timer.Stop();
+            //if (StethoOutFile != null)
+            //StethoOutFile.CloseFile();
+            //Sthetho.IsStreaming = false;  //Tell UI To Stop Streaming
             //reader.BaseStream.Seek(0, SeekOrigin.Begin);  //Reset binary stream
             //timer.Dispose();
             //checkboxFile.IsEnabled = true;
             //Remove timer Reference
+            //tmpFile.Close();
         }
 
         private void Clear()
@@ -247,4 +304,5 @@ namespace LiveStethoV2
 
 		#endregion
 	}
+
 }
