@@ -114,7 +114,6 @@ namespace LiveStethoV2
             Denoiser = OnlineFilter.CreateDenoise(25);
         }
 
-     
         //Test Function
         private void RestCommGet()
         {
@@ -122,6 +121,7 @@ namespace LiveStethoV2
             RestClient TestBe = new RestClient("http://127.0.0.1:5000/");
             RestRequest req = new RestRequest("get/{name}", Method.GET);
             req.AddUrlSegment("name", "bear");
+            req.AddFile("file", "file path");
             IRestResponse resp = TestBe.Execute(req);
             JsonData respobj = Newtonsoft.Json.JsonConvert.DeserializeObject<JsonData>(resp.Content);
             MessageBox.Show(respobj.data);
