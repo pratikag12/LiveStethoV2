@@ -24,36 +24,35 @@ using MathNet.Filtering;
 
 namespace LiveStethoV2
 {
-	/// <summary>
-	/// Interaction logic for MainWindow.xaml
-	/// </summary>
-	public partial class MainWindow : Window
-	{
-		//Graphing---------------------------------------
-		private IXyDataSeries<int, short> SoundData;
+    /// <summary>
+    /// Interaction logic for MainWindow.xaml
+    /// </summary>
+    public partial class MainWindow : Window
+    {
+        //Graphing---------------------------------------
+        private IXyDataSeries<int, short> SoundData;
         private int plotCount = 0;
-		private int Capacity = 10;
+        private int Capacity = 10;
         List<byte> SoundBuffer = new List<byte>();
-   
-		//Binary Reader (TODO: temp)-----------------------------------------
-		private const int _chunkSize = 16000;
+
+        //Binary Reader (TODO: temp)-----------------------------------------
+        private const int _chunkSize = 16000;
         public BinaryReader reader = null;
-        string inputfile = "Somethingelse";
+        string inputfile = Path.Combine(Directory.GetCurrentDirectory(), @"TestAudio.dat");
         //Audio Player Classes--------------------------------------------
         AudioPlayer StethoPlayer;
 
         //Wave Writer Class------------------------------------------------
-        //private WaveWriter StethoOutFile;
         //byte[] Sound = new byte[512];
         //int counter = 0;
         Stream tmpFile;
 
         //Serial Data In---------------------------------------------------
         SerialCom SerialDataIn;
-		private ManualResetEvent SerialWait = new ManualResetEvent(false);
+        private ManualResetEvent SerialWait = new ManualResetEvent(false);
 
-		//View Model
-		StethoViewModel Sthetho;
+        //View Model
+        StethoViewModel Sthetho;
 
         //Hi Resolution Timer, For File Reading
         MultimediaTimer timer;
@@ -66,37 +65,35 @@ namespace LiveStethoV2
         OnlineFilter Denoiser;
 
         public MainWindow()
-		{
-			try
-			{
-				InitializeComponent();
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine(ex.Message);
-			}
+        {
+            try
+            {
+                InitializeComponent();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
 
-			//StethoOutFile = new WaveWriter(_outputwave, 16000, 16, 1); //Wave Writer Class
-			//Graphing Add In Code-Behind
-			SoundData = new XyDataSeries<int, short>();
-			SoundData.FifoCapacity = this.Capacity * 16000;
-			SoundSeries.DataSeries = SoundData;
-			YAxis.VisibleRange = new DoubleRange(-32000, 32000);
+            //Graphing Add In Code-Behind
+            SoundData = new XyDataSeries<int, short>();
+            SoundData.FifoCapacity = this.Capacity * 16000;
+            SoundSeries.DataSeries = SoundData;
+            YAxis.VisibleRange = new DoubleRange(-32000, 32000);
 
             //View Model Update
             Sthetho = new StethoViewModel(Init, Stop, Clear);
             this.DataContext = Sthetho;
-			Sthetho.IsStreaming = false;
+            Sthetho.IsStreaming = false;
 
             //Open File (Remove for serial Stream)
-            reader = OpenFile();
+            reader = OpenFile(inputfile);
 
             //Audio Class
             StethoPlayer = new AudioPlayer(15277, 16, 1);
 
             //Open Serial Port
             SerialDataIn = new SerialCom(921600, "COM8");
-            //SerialDataIn.OpenSerialPort();
 
             //Open File For Writing
             Sthetho.OutFileName = "StethoSound";
@@ -112,46 +109,44 @@ namespace LiveStethoV2
             Denoiser = OnlineFilter.CreateDenoise(25);
         }
 
-		private void Init()  
-		{
-			Sthetho.IsStreaming = true;  //Block Streaming Button
+        private void Init()
+        {
+            Sthetho.IsStreaming = true;  //Block Streaming Button
             checkboxFile.IsEnabled = false; //Disable CheckBox
-            SerialDataIn.OpenSerialPort();  //Open Serial Data Port
-            BinaryReader br = new BinaryReader(SerialDataIn.SerialPortFTDI.BaseStream);
-     
+                                            //SerialDataIn.OpenSerialPort();  //Open Serial Data Por
             if (Sthetho.WriteToFile)
             {
-               //StethoOutFile = new WaveWriter(Sthetho.OutFileName, 15277, 16, 1);
-                 tmpFile = File.OpenWrite(@"D:\Test Data S\CDLData\StethoStream.bin"); }
-           
+                //tmpFile = new StreamWriter(File.OpenWrite(@"D:\Test Data S\Wpf Application\LiveStethoV2\LiveStethoV2\RecievedFiles\StethoStream.adt")); }
+                tmpFile = File.OpenWrite(@"D:\Test Data S\Wpf Application\LiveStethoV2\LiveStethoV2\RecievedFiles\StethoStream.dat");
+            }
+
             timer = new MultimediaTimer() { Interval = 1 };
-            
+
             Console.WriteLine("Running graphing system");
             //Observable to output to observer
             var dataStream = Observable.Create<byte[]>(ob =>
             {
                 timer.Elapsed += (source, e) =>
-            	{
-            		if (reader.BaseStream.Position < reader.BaseStream.Length)
-           		{
-           			//Console.WriteLine("timer: " + reader.BaseStream.Position.ToString() + " - " + reader.BaseStream.Length.ToString());
-           			ob.OnNext(reader.ReadBytes(32));  //Call connected, subscribed observables. 
-           			//Console.WriteLine("timer: readed");
-           		}
-           		else
+                {
+                    if (reader.BaseStream.Position < reader.BaseStream.Length)
                     {
-                        //Console.WriteLine("timer: ready to stop");
+
+                        ob.OnNext(reader.ReadBytes(32));  //Call connected, subscribed observables. 
+                    }
+                    else
+                    {
+                        Console.WriteLine("timer: ready to stop");
                         timer.Stop();
-                        if (StethoOutFile != null)
-                            StethoOutFile.CloseFile();
                         Sthetho.IsStreaming = false;
                         checkboxFile.IsEnabled = true;
-                        //Console.WriteLine("timer: stopped");
+                        Console.WriteLine("timer: stopped");
                     }
                 };
                 timer.Start();
                 return Disposable.Empty;
-            }).Publish();
+            })
+            .SelectMany(data => data.ToObservable())
+            .Publish();
 
             /*
             //Observable to output to observer - SerialPort
@@ -170,23 +165,25 @@ namespace LiveStethoV2
 
             // Save to file
             if (Sthetho.WriteToFile)
-            { dataStream.Subscribe(data => {
-                tmpFile.WriteByte(data);
-                tmpFile.Flush();
-                }); }
-  
+            {
+                dataStream.Subscribe(data =>
+                {
+                    tmpFile.WriteByte(data);
+                    tmpFile.Flush();
+                });
+            }
+
             ////Audio Playback----------------
             /*dataStream
                 .Buffer(512)
-               .Subscribe(values =>
+                .Subscribe(values =>
                     { StethoPlayer.AddData(values.ToArray());
                     StethoPlayer.Play();
                 });*/
             //------------------------------------
-            
+
             //Graphing
             dataStream
-                //.SubscribeOn(NewThreadScheduler.Default)
                 .Buffer(2)
                 .Buffer(153)
                 .Subscribe(values =>
@@ -206,14 +203,14 @@ namespace LiveStethoV2
                             }
                             else
                             {
-                                SoundData.Append(plotCount++,  s);
+                                SoundData.Append(plotCount++, s);
                             }
                         }
                     }
                 });
-            
 
-            //File Writing      
+
+            //File Writing in Wav audio format    
             /*
             dataStream.Buffer(2000).SubscribeOn(NewThreadScheduler.Default)
                 .Subscribe(values =>
@@ -222,23 +219,21 @@ namespace LiveStethoV2
                     StethoOutFile.WriteData(res);
                 }
                 );
-              */  
+                */
 
             dataStream.Connect();  //For the .Publish on the observable
-		}
+        }
 
         private void Stop()
         {
-            //if (timer.IsRunning)
-            //timer.Stop();
-            //if (StethoOutFile != null)
-            //StethoOutFile.CloseFile();
-            //Sthetho.IsStreaming = false;  //Tell UI To Stop Streaming
-            //reader.BaseStream.Seek(0, SeekOrigin.Begin);  //Reset binary stream
-            //timer.Dispose();
-            //checkboxFile.IsEnabled = true;
+            if (timer.IsRunning)
+                timer.Stop();
+            Sthetho.IsStreaming = false;  //Tell UI To Stop Streaming
+            reader.BaseStream.Seek(0, SeekOrigin.Begin);  //Reset binary stream
+            timer.Dispose();
+            checkboxFile.IsEnabled = true;
             //Remove timer Reference
-            //tmpFile.Close();
+            tmpFile.Close();  //Save File
         }
 
         private void Clear()
@@ -246,29 +241,29 @@ namespace LiveStethoV2
             SoundData.Clear();
         }
 
-		//Temporay Open File--------------------------------------------------->
-		public BinaryReader OpenFile()
-		{
-			if (!File.Exists(inputfile))
-			{
-				throw new Exception();
-			}
-			return new BinaryReader(File.Open(inputfile, FileMode.Open));
-		}
-		//--------------------------------------------------------------------->
+        //Temporay Open File--------------------------------------------------->
+        public BinaryReader OpenFile(string inputfile)
+        {
+            if (!File.Exists(inputfile))
+            {
+                throw new Exception();
+            }
+            return new BinaryReader(File.Open(inputfile, FileMode.Open));
+        }
+        //--------------------------------------------------------------------->
 
-		//Graphing Library
-		#region INotifyPropertyChanged implementation
+        //Graphing Library
+        #region INotifyPropertyChanged implementation
 
-		public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler PropertyChanged;
 
-		protected virtual void OnPropertyChanged(string propertyName = null)
-		{
-			if (PropertyChanged != null)
-				PropertyChanged.Invoke(this, new PropertyChangedEventArgs(propertyName));
-		}
+        protected virtual void OnPropertyChanged(string propertyName = null)
+        {
+            if (PropertyChanged != null)
+                PropertyChanged.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
 
-		#endregion
-	}
+        #endregion
+    }
 
 }

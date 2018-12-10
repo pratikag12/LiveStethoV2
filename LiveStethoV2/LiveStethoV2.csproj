@@ -125,6 +125,7 @@
     </ApplicationDefinition>
     <Compile Include="GraphCommand.cs" />
     <Compile Include="MultimediaTimer.cs" />
+    <Compile Include="RestClient.cs" />
     <Compile Include="SerialCom.cs" />
     <Compile Include="SoundGraphing.cs" />
     <Compile Include="StethoViewModel.cs" />
@@ -165,9 +166,6 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="packages.config" />
-    <None Include="Pratik_Heart_6_OP_Clean.dat">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

@@ -16,6 +16,7 @@ namespace LiveStethoV2
             return 0;
         }
 
+        /*
         //Test Function
         private void RestCommGet()
         {
@@ -42,7 +43,7 @@ namespace LiveStethoV2
             tmpFile.Write(resp.RawBytes, 0, (int)resp.ContentLength);
             tmpFile.Close();
         }
-
+        */
 
         class JsonData
         {
