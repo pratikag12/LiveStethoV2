@@ -117,7 +117,7 @@ namespace LiveStethoV2
             if (Sthetho.WriteToFile)
             {
                 //tmpFile = new StreamWriter(File.OpenWrite(@"D:\Test Data S\Wpf Application\LiveStethoV2\LiveStethoV2\RecievedFiles\StethoStream.adt")); }
-                tmpFile = File.OpenWrite(@"D:\Test Data S\Wpf Application\LiveStethoV2\LiveStethoV2\RecievedFiles\StethoStream.dat");
+                tmpFile = File.OpenWrite("StethoStream.dat");
             }
 
             timer = new MultimediaTimer() { Interval = 1 };
@@ -130,7 +130,6 @@ namespace LiveStethoV2
                 {
                     if (reader.BaseStream.Position < reader.BaseStream.Length)
                     {
-
                         ob.OnNext(reader.ReadBytes(32));  //Call connected, subscribed observables. 
                     }
                     else
@@ -138,7 +137,6 @@ namespace LiveStethoV2
                         Console.WriteLine("timer: ready to stop");
                         timer.Stop();
                         Sthetho.IsStreaming = false;
-                        checkboxFile.IsEnabled = true;
                         Console.WriteLine("timer: stopped");
                     }
                 };
@@ -228,10 +226,9 @@ namespace LiveStethoV2
         {
             if (timer.IsRunning)
                 timer.Stop();
-            Sthetho.IsStreaming = false;  //Tell UI To Stop Streaming
+            //Sthetho.IsStreaming = false;  //Tell UI To Stop Streaming
             reader.BaseStream.Seek(0, SeekOrigin.Begin);  //Reset binary stream
             timer.Dispose();
-            checkboxFile.IsEnabled = true;
             //Remove timer Reference
             tmpFile.Close();  //Save File
         }
