@@ -25,7 +25,7 @@ namespace LiveStethoV2
             StreamCommand = new GraphCommand(() => StreamAct()
             , (x) =>
             {
-                if (Convert.ToBoolean(x))
+                if (Convert.ToBoolean(x)) //If Is Streaming Prevent button from being pressed
                     return false;
                 return true;
             });

@@ -17,14 +17,14 @@ namespace LiveStethoV2
         public App()
         {
            SciChartSurface.SetRuntimeLicenseKey(@"<LicenseContract>
-              <Customer>University of Toronto </Customer>
-              <OrderId>EDUCATIONAL-USE-0068</OrderId>
-              <LicenseCount>1</LicenseCount>
-              <IsTrialLicense>false</IsTrialLicense>
-              <SupportExpires>12/13/2018 00:00:00</SupportExpires>
-              <ProductCode>SC-WPF-SDK-PRO</ProductCode>
-              <KeyCode>lwAAAAEAAABZYNDU+0vUAXcAQ3VzdG9tZXI9VW5pdmVyc2l0eSBvZiBUb3JvbnRvIDtPcmRlcklkPUVEVUNBVElPTkFMLVVTRS0wMDY4O1N1YnNjcmlwdGlvblZhbGlkVG89MTMtRGVjLTIwMTg7UHJvZHVjdENvZGU9U0MtV1BGLVNESy1QUk9LaRdL5yg3FSXZFxhEw+0jvnJ/Dc+snunHyWlc38FnuNXtifVAvJEGH3xsMz0B2pQ=</KeyCode>
-            </LicenseContract>");
+                    <Customer>pratik.agrawal@mail.utoronto.ca</Customer>
+                    <OrderId>Trial ex</OrderId>
+                    <LicenseCount>1</LicenseCount>
+                    <IsTrialLicense>true</IsTrialLicense>
+                    <SupportExpires>12/29/2018 00:00:00</SupportExpires>
+                    <ProductCode>SC - WPF - SDK - ENTERPRISE - SR</ProductCode>
+                    <KeyCode>tgIAAbJyb4DUh9QBAAABcQmf1AEeAH8AQ3VzdG9tZXI9cHJhdGlrLmFncmF3YWxAbWFpbC51dG9yb250by5jYTtPcmRlcklkPVRyaWFsIGV4O1N1YnNjcmlwdGlvblZhbGlkVG89MjktRGVjLTIwMTg7UHJvZHVjdENvZGU9U0MtV1BGLVNESy1FTlRFUlBSSVNFLVNSQ1BSATsfBIgX2m7xwaTTkY5pvlWF76l1nJRT + xy2yvyIJUiBdTlYC + Em7rEnDpHtgA ==</KeyCode>
+                    </LicenseContract>");
         }
     }
 }

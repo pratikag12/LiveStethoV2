@@ -20,8 +20,7 @@ using System.Linq;
 using System.Reactive.Disposables;
 using NAudio;
 using MathNet.Filtering;
-using RestSharp;
-using Newtonsoft;
+
 
 namespace LiveStethoV2
 {
@@ -56,8 +55,8 @@ namespace LiveStethoV2
 		//View Model
 		StethoViewModel Sthetho;
 
-        //Hi Resolution Timer
-        //MultimediaTimer timer;
+        //Hi Resolution Timer, For File Reading
+        MultimediaTimer timer;
 
         //Filter Object
         double fc1 = 50; //low cutoff frequency
@@ -85,13 +84,12 @@ namespace LiveStethoV2
 			YAxis.VisibleRange = new DoubleRange(-32000, 32000);
 
             //View Model Update
-            //Sthetho = new StethoViewModel(Init, Stop, Clear);
-            Sthetho = new StethoViewModel(RestCommGet, Stop, RestCommGetFile);
+            Sthetho = new StethoViewModel(Init, Stop, Clear);
             this.DataContext = Sthetho;
 			Sthetho.IsStreaming = false;
 
             //Open File (Remove for serial Stream)
-            //reader = OpenFile();
+            reader = OpenFile();
 
             //Audio Class
             StethoPlayer = new AudioPlayer(15277, 16, 1);
@@ -114,37 +112,6 @@ namespace LiveStethoV2
             Denoiser = OnlineFilter.CreateDenoise(25);
         }
 
-        //Test Function
-        private void RestCommGet()
-        {
-            //Call Rest Api
-            RestClient TestBe = new RestClient("http://127.0.0.1:5000/");
-            RestRequest req = new RestRequest("get/{name}", Method.GET);
-            req.AddUrlSegment("name", "bear");
-            req.AddFile("file", "file path");
-            IRestResponse resp = TestBe.Execute(req);
-            JsonData respobj = Newtonsoft.Json.JsonConvert.DeserializeObject<JsonData>(resp.Content);
-            MessageBox.Show(respobj.data);
-        }
-
-        private void RestCommGetFile()
-        {
-            //Call Rest Api
-            RestClient TestBe = new RestClient("http://127.0.0.1:5000/");
-            RestRequest req = new RestRequest("get/{name}", Method.GET);
-            req.AddUrlSegment("name", "bear");
-            IRestResponse resp = TestBe.Execute(req);
-            Console.WriteLine(resp.ContentLength);
-            tmpFile = File.OpenWrite(@"D:\Test Data S\CDLData\StethoStream.bin");
-            tmpFile.Write(resp.RawBytes, 0, (int) resp.ContentLength);
-            tmpFile.Close();
-        }
-
-        class JsonData
-        {
-            public string data; 
-        }
-
 		private void Init()  
 		{
 			Sthetho.IsStreaming = true;  //Block Streaming Button
@@ -157,37 +124,36 @@ namespace LiveStethoV2
                //StethoOutFile = new WaveWriter(Sthetho.OutFileName, 15277, 16, 1);
                  tmpFile = File.OpenWrite(@"D:\Test Data S\CDLData\StethoStream.bin"); }
            
-            //timer = new MultimediaTimer() { Interval = 1 };
+            timer = new MultimediaTimer() { Interval = 1 };
             
             Console.WriteLine("Running graphing system");
             //Observable to output to observer
+            var dataStream = Observable.Create<byte[]>(ob =>
+            {
+                timer.Elapsed += (source, e) =>
+            	{
+            		if (reader.BaseStream.Position < reader.BaseStream.Length)
+           		{
+           			//Console.WriteLine("timer: " + reader.BaseStream.Position.ToString() + " - " + reader.BaseStream.Length.ToString());
+           			ob.OnNext(reader.ReadBytes(32));  //Call connected, subscribed observables. 
+           			//Console.WriteLine("timer: readed");
+           		}
+           		else
+                    {
+                        //Console.WriteLine("timer: ready to stop");
+                        timer.Stop();
+                        if (StethoOutFile != null)
+                            StethoOutFile.CloseFile();
+                        Sthetho.IsStreaming = false;
+                        checkboxFile.IsEnabled = true;
+                        //Console.WriteLine("timer: stopped");
+                    }
+                };
+                timer.Start();
+                return Disposable.Empty;
+            }).Publish();
 
-            //var dataStream = Observable.Create<byte[]>(ob =>
-            //{
-            //	timer.Elapsed += (source, e) =>
-            //	{
-            //		if (reader.BaseStream.Position < reader.BaseStream.Length)
-            //		{
-            //			//Console.WriteLine("timer: " + reader.BaseStream.Position.ToString() + " - " + reader.BaseStream.Length.ToString());
-            //			ob.OnNext(reader.ReadBytes(32));  //Call connected, subscribed observables. 
-            //			//Console.WriteLine("timer: readed");
-            //		}
-            //		else
-            //		{
-            //			//Console.WriteLine("timer: ready to stop");
-            //			timer.Stop();
-            //                     if (StethoOutFile != null)
-            //                         StethoOutFile.CloseFile();
-            //                     Sthetho.IsStreaming = false;
-            //                     checkboxFile.IsEnabled = true;
-            //                     //Console.WriteLine("timer: stopped");
-            //                 }
-            //	};
-            //	timer.Start();
-            //	return Disposable.Empty;
-            //}).Publish();
-
-
+            /*
             //Observable to output to observer - SerialPort
             var dataStream = Observable.FromEventPattern<SerialDataReceivedEventHandler, SerialDataReceivedEventArgs>(
                 h => SerialDataIn.SerialPortFTDI.DataReceived += h,
@@ -200,6 +166,7 @@ namespace LiveStethoV2
                 })
             .SelectMany(data => data.ToObservable())
             .Publish();
+            */
 
             // Save to file
             if (Sthetho.WriteToFile)
@@ -207,16 +174,16 @@ namespace LiveStethoV2
                 tmpFile.WriteByte(data);
                 tmpFile.Flush();
                 }); }
-
-     
-            ////Audio Playback
+  
+            ////Audio Playback----------------
             /*dataStream
                 .Buffer(512)
                .Subscribe(values =>
                     { StethoPlayer.AddData(values.ToArray());
                     StethoPlayer.Play();
                 });*/
-
+            //------------------------------------
+            
             //Graphing
             dataStream
                 //.SubscribeOn(NewThreadScheduler.Default)
@@ -257,7 +224,7 @@ namespace LiveStethoV2
                 );
               */  
 
-            dataStream.Connect();
+            dataStream.Connect();  //For the .Publish on the observable
 		}
 
         private void Stop()
@@ -288,7 +255,6 @@ namespace LiveStethoV2
 			}
 			return new BinaryReader(File.Open(inputfile, FileMode.Open));
 		}
-
 		//--------------------------------------------------------------------->
 
 		//Graphing Library
