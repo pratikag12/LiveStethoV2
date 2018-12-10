@@ -11,6 +11,15 @@ namespace LiveStethoV2
     class RestClient
     {
 
+        class JsonData
+        {
+            public int id;
+            public string name;
+            public string file_uri;
+            public int length;
+            public string date; 
+        }
+
         private int GetFileList()
         {
             return 0;
@@ -44,12 +53,5 @@ namespace LiveStethoV2
             tmpFile.Close();
         }
         */
-
-        class JsonData
-        {
-            public string data;
-        }
-
-
     }
 }
