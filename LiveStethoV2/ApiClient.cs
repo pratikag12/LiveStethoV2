@@ -10,6 +10,7 @@ using System.Reactive;
 using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
 using System.Reactive.Threading.Tasks;
+using System.IO;
 
 namespace LiveStethoV2
 {
@@ -22,10 +23,37 @@ namespace LiveStethoV2
         {
             this._client = new RestClient("http://127.0.0.1:5000/api/v1_0");
         }
-        public IObservable<IRestResponse<SoundDataModel>> GetFileList()
+        public Task<IRestResponse<SoundDataModel>> GetFileList()
         {
             var req = new RestRequest("/soundmetadatas", Method.GET);
-            var resp = _client.ExecuteTaskAsync<SoundDataModel>(req).ToObservable();
+            var resp = _client.ExecuteTaskAsync<SoundDataModel>(req);
+            return resp;
+        }
+
+        public Task<IRestResponse> SendMetaData(string name)
+        {
+            var req = new RestRequest("/soundmetadatas", Method.POST);
+            req.AddJsonBody(
+                new
+                {
+                    name = name,
+                    length = 1234
+                }); // AddJsonBody serializes the object automatically
+
+            //req.AddHeader("Content-type", "application/json");
+            req.RequestFormat = DataFormat.Json;
+            var resp = _client.ExecuteTaskAsync(req);
+            return resp;
+        }
+
+        public Task<IRestResponse> SendSoundfile(string file, int len)
+        {
+            var req = new RestRequest("/sounddata/{id}", Method.POST);
+            req.AddUrlSegment("id", 1);
+            BinaryReader br = new BinaryReader(File.Open(file, FileMode.Open));
+            byte[] documentBytes = br.ReadBytes(len); 
+            req.AddParameter("application/dat", documentBytes, ParameterType.RequestBody);
+            var resp = _client.ExecuteTaskAsync(req);
             return resp;
         }
     }

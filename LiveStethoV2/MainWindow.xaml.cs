@@ -20,7 +20,7 @@ using System.Linq;
 using System.Reactive.Disposables;
 using NAudio;
 using MathNet.Filtering;
-
+using RestSharp;
 
 namespace LiveStethoV2
 {
@@ -111,9 +111,7 @@ namespace LiveStethoV2
 
         private void Init()
         {
-            var cli = new ApiClient();
-            cli.GetFileList().Subscribe((e) =>
-                Console.WriteLine(e.Content));
+
             Sthetho.IsStreaming = true;  //Block Streaming Button
             checkboxFile.IsEnabled = false; //Disable CheckBox
                                             //SerialDataIn.OpenSerialPort();  //Open Serial Data Por
@@ -210,30 +208,43 @@ namespace LiveStethoV2
                     }
                 });
 
-
-            //File Writing in Wav audio format    
-            /*
-            dataStream.Buffer(2000).SubscribeOn(NewThreadScheduler.Default)
-                .Subscribe(values =>
-                {
-                    var res = values.SelectMany(i => i).ToArray();
-                    StethoOutFile.WriteData(res);
-                }
-                );
-                */
-
             dataStream.Connect();  //For the .Publish on the observable
         }
 
-        private void Stop()
+        private async void Stop()
         {
             if (timer.IsRunning)
                 timer.Stop();
-            //Sthetho.IsStreaming = false;  //Tell UI To Stop Streaming
+            Sthetho.IsStreaming = false;  //Tell UI To Stop Streaming
             reader.BaseStream.Seek(0, SeekOrigin.Begin);  //Reset binary stream
             timer.Dispose();
             //Remove timer Reference
             tmpFile.Close();  //Save File
+
+            long fileLength = new FileInfo("StethoStream.dat").Length; //G
+
+            //Send File to server
+            string data = await this.PostData("Heart Sound");
+            Console.Write(data);
+            data = await this.GetData();
+            Console.Write(data);
+
+        }
+
+        public async Task<string> GetData()
+        {
+            ApiClient cli = new ApiClient();
+            Task<IRestResponse<SoundDataModel>> apidata =  cli.GetFileList();
+            IRestResponse<SoundDataModel> data = await apidata;
+            return data.Content; 
+        }
+
+        public async Task<string> PostData(string name)
+        {
+            ApiClient cli = new ApiClient();
+            Task<IRestResponse> apidata = cli.SendMetaData(name);
+            IRestResponse data = await apidata;
+            return data.Content;
         }
 
         private void Clear()
