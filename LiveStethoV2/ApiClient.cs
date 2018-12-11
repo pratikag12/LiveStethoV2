@@ -55,6 +55,7 @@ namespace LiveStethoV2
             req.AddUrlSegment("id", id);
             BinaryReader br = new BinaryReader(File.Open(file, FileMode.Open));
             byte[] documentBytes = br.ReadBytes((int)len);
+            br.Close();//Close the File
             req.AddParameter("application/dat", documentBytes, ParameterType.RequestBody);
             var resp = _client.ExecuteTaskAsync(req);
             return resp;

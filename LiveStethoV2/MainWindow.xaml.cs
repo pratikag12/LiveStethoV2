@@ -120,6 +120,10 @@ namespace LiveStethoV2
             if (Sthetho.WriteToFile)
             {
                 //tmpFile = new StreamWriter(File.OpenWrite(@"D:\Test Data S\Wpf Application\LiveStethoV2\LiveStethoV2\RecievedFiles\StethoStream.adt")); }
+                if(File.Exists(outputfile))
+                {
+                    File.Delete(outputfile);
+                }
                 tmpFile = File.OpenWrite(outputfile);
             }
 
@@ -139,7 +143,6 @@ namespace LiveStethoV2
                     {
                         Console.WriteLine("timer: ready to stop");
                         timer.Stop();
-                        Sthetho.IsStreaming = false;
                         Console.WriteLine("timer: stopped");
                     }
                 };
@@ -208,12 +211,12 @@ namespace LiveStethoV2
         {
             if (timer.IsRunning)
                 timer.Stop();
-            Sthetho.IsStreaming = false;  //Tell UI To Stop Streaming
             reader.BaseStream.Seek(0, SeekOrigin.Begin);  //Reset binary stream
             timer.Dispose();
             //Remove timer Reference
             tmpFile.Close();  //Save File
             SaveResultToServer(); //Save Result to Server
+            Sthetho.IsStreaming = false;  //Tell UI To Stop Streaming
         }
 
         //Server Comm
