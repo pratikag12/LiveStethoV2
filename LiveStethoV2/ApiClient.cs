@@ -14,7 +14,6 @@ using System.IO;
 
 namespace LiveStethoV2
 {
-
     class ApiClient
     {
         private IRestClient _client = null;
@@ -23,67 +22,84 @@ namespace LiveStethoV2
         {
             this._client = new RestClient("http://127.0.0.1:5000/api/v1_0");
         }
-        public Task<IRestResponse<SoundDataModel>> GetFileList()
+
+        //Acquire all metadata
+        public Task<IRestResponse<SoundDataModel>> GetAllMetaData()
         {
             var req = new RestRequest("/soundmetadatas", Method.GET);
             var resp = _client.ExecuteTaskAsync<SoundDataModel>(req);
             return resp;
         }
 
-        public Task<IRestResponse> SendMetaData(string name)
+        //Send Sound MetaData
+        public Task<IRestResponse<SoundDataModel.SoundData>> PostMetaData(string name, int filelength)
         {
             var req = new RestRequest("/soundmetadatas", Method.POST);
             req.AddJsonBody(
                 new
                 {
-                    name = name,
-                    length = 1234
+                    name = name,  //Name of Test
+                    length = filelength  //Name of File
                 }); // AddJsonBody serializes the object automatically
 
             //req.AddHeader("Content-type", "application/json");
             req.RequestFormat = DataFormat.Json;
-            var resp = _client.ExecuteTaskAsync(req);
+            var resp = _client.ExecuteTaskAsync<SoundDataModel.SoundData>(req);
             return resp;
         }
 
-        public Task<IRestResponse> SendSoundfile(string file, long len)
+        //Upload Sound Data File
+        public Task<IRestResponse> PostSoundFile(string file, long len, int id)
         {
             var req = new RestRequest("/sounddata/{id}", Method.POST);
-            req.AddUrlSegment("id", 1);
+            req.AddUrlSegment("id", id);
             BinaryReader br = new BinaryReader(File.Open(file, FileMode.Open));
-            byte[] documentBytes = br.ReadBytes((int) len); 
+            byte[] documentBytes = br.ReadBytes((int)len);
             req.AddParameter("application/dat", documentBytes, ParameterType.RequestBody);
             var resp = _client.ExecuteTaskAsync(req);
             return resp;
         }
-    }
 
-    /*
-    //Test Function
-    private void RestCommGet()
-    {
-        //Call Rest Api
-        RestClient TestBe = new RestClient("http://127.0.0.1:5000/");
-        RestRequest req = new RestRequest("get/{name}", Method.GET);
-        req.AddUrlSegment("name", "bear");
-        req.AddFile("file", "file path");
-        IRestResponse resp = TestBe.Execute(req);
-        JsonData respobj = Newtonsoft.Json.JsonConvert.DeserializeObject<JsonData>(resp.Content);
-        MessageBox.Show(respobj.data);
-    }
+        //Retrieve sound metadata
+        public Task<IRestResponse<SoundDataModel.SoundData>> GetMetaData(int id)
+        {
+            var req = new RestRequest("/soundmetadata/{id}", Method.GET);
+            req.AddUrlSegment("id", id); //Add URL request data id
+            var resp = _client.ExecuteTaskAsync<SoundDataModel.SoundData>(req);
+            return resp;
+        }
 
-    private void RestCommGetFile()
-    {
-        //Call Rest Api
-        RestClient TestBe = new RestClient("http://127.0.0.1:5000/");
-        RestRequest req = new RestRequest("get/{name}", Method.GET);
+        //Retrieve sounddata
 
-        req.AddUrlSegment("name", "bear");
-        IRestResponse resp = TestBe.Execute(req);
-        Console.WriteLine(resp.ContentLength);
-        tmpFile = File.OpenWrite(@"D:\Test Data S\CDLData\StethoStream.bin");
-        tmpFile.Write(resp.RawBytes, 0, (int)resp.ContentLength);
-        tmpFile.Close();
+        //Retrieve analysis results
+
+        /*
+        //Test Function
+        private void RestCommGet()
+        {
+            //Call Rest Api
+            RestClient TestBe = new RestClient("http://127.0.0.1:5000/");
+            RestRequest req = new RestRequest("get/{name}", Method.GET);
+            req.AddUrlSegment("name", "bear");
+            req.AddFile("file", "file path");
+            IRestResponse resp = TestBe.Execute(req);
+            JsonData respobj = Newtonsoft.Json.JsonConvert.DeserializeObject<JsonData>(resp.Content);
+            MessageBox.Show(respobj.data);
+        }
+
+        private void RestCommGetFile()
+        {
+            //Call Rest Api
+            RestClient TestBe = new RestClient("http://127.0.0.1:5000/");
+            RestRequest req = new RestRequest("get/{name}", Method.GET);
+
+            req.AddUrlSegment("name", "bear");
+            IRestResponse resp = TestBe.Execute(req);
+            Console.WriteLine(resp.ContentLength);
+            tmpFile = File.OpenWrite(@"D:\Test Data S\CDLData\StethoStream.bin");
+            tmpFile.Write(resp.RawBytes, 0, (int)resp.ContentLength);
+            tmpFile.Close();
+        }
+        */
     }
-    */
 }

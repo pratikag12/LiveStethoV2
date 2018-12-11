@@ -173,15 +173,6 @@ namespace LiveStethoV2
                 });
             }
 
-            ////Audio Playback----------------
-            /*dataStream
-                .Buffer(512)
-                .Subscribe(values =>
-                    { StethoPlayer.AddData(values.ToArray());
-                    StethoPlayer.Play();
-                });*/
-            //------------------------------------
-
             //Graphing
             dataStream
                 .Buffer(2)
@@ -225,38 +216,20 @@ namespace LiveStethoV2
             long fileLength = new FileInfo("StethoStream.dat").Length; //Get file length
 
             //Send File to server
-            string data = await this.PostData("Heart Sound");
+            Console.Write("Adding MetaData to Server");
+            string data = await this.PostData("Heart Sound", fileLength);
             Console.Write(data);
+            Console.Write("Getting All Data From Server");
             data = await this.GetData();
             Console.Write(data);
             string filepath = Path.Combine(Directory.GetCurrentDirectory(), @"StethoStream.dat");
-            HttpStatusCode code = await this.PostFile(filepath, fileLength); //
+            Console.Write("Sending File to Server");
+            HttpStatusCode code = await this.PostFile(filepath, fileLength); 
             Console.Write(code);
-
-        }
-
-        public async Task<string> GetData()
-        {
-            ApiClient cli = new ApiClient();
-            Task<IRestResponse<SoundDataModel>> apidata =  cli.GetFileList();
-            IRestResponse<SoundDataModel> data = await apidata;
-            return data.Content; 
-        }
-
-        public async Task<string> PostData(string name)
-        {
-            ApiClient cli = new ApiClient();
-            Task<IRestResponse> apidata = cli.SendMetaData(name);
-            IRestResponse data = await apidata;
-            return data.Content;
-        }
-
-        public async Task<HttpStatusCode> PostFile(string file, long len)
-        {
-            ApiClient cli = new ApiClient();
-            Task<IRestResponse> apidata = cli.SendSoundfile(file, len);
-            IRestResponse data = await apidata;
-            return data.StatusCode;
+            Console.Write("Getting Single File From Server");
+            Tuple<HttpStatusCode, string> datatest = await this.GetMetaData(1);
+            Console.Write(datatest.Item1);
+            Console.Write(datatest.Item2);
         }
 
         private void Clear()
