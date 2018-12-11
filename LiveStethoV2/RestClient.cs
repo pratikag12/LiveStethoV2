@@ -11,7 +11,7 @@ namespace LiveStethoV2
     class RestClient
     {
 
-        class JsonData
+        class SoundMetaData
         {
             public int id;
             public string name;
@@ -25,6 +25,20 @@ namespace LiveStethoV2
             return 0;
         }
 
+        //Test Something
+        try
+        {	        
+		
+	    }
+	    catch (RestSharp.DataFormat e)
+	    {
+
+		    
+	    }
+          
+
+        
+        
         /*
         //Test Function
         private void RestCommGet()
