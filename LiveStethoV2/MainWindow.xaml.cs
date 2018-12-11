@@ -21,6 +21,7 @@ using System.Reactive.Disposables;
 using NAudio;
 using MathNet.Filtering;
 using RestSharp;
+using System.Net;
 
 namespace LiveStethoV2
 {
@@ -221,13 +222,16 @@ namespace LiveStethoV2
             //Remove timer Reference
             tmpFile.Close();  //Save File
 
-            long fileLength = new FileInfo("StethoStream.dat").Length; //G
+            long fileLength = new FileInfo("StethoStream.dat").Length; //Get file length
 
             //Send File to server
             string data = await this.PostData("Heart Sound");
             Console.Write(data);
             data = await this.GetData();
             Console.Write(data);
+            string filepath = Path.Combine(Directory.GetCurrentDirectory(), @"StethoStream.dat");
+            HttpStatusCode code = await this.PostFile(filepath, fileLength); //
+            Console.Write(code);
 
         }
 
@@ -245,6 +249,14 @@ namespace LiveStethoV2
             Task<IRestResponse> apidata = cli.SendMetaData(name);
             IRestResponse data = await apidata;
             return data.Content;
+        }
+
+        public async Task<HttpStatusCode> PostFile(string file, long len)
+        {
+            ApiClient cli = new ApiClient();
+            Task<IRestResponse> apidata = cli.SendSoundfile(file, len);
+            IRestResponse data = await apidata;
+            return data.StatusCode;
         }
 
         private void Clear()

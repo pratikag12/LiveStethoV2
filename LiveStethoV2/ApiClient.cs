@@ -46,12 +46,12 @@ namespace LiveStethoV2
             return resp;
         }
 
-        public Task<IRestResponse> SendSoundfile(string file, int len)
+        public Task<IRestResponse> SendSoundfile(string file, long len)
         {
             var req = new RestRequest("/sounddata/{id}", Method.POST);
             req.AddUrlSegment("id", 1);
             BinaryReader br = new BinaryReader(File.Open(file, FileMode.Open));
-            byte[] documentBytes = br.ReadBytes(len); 
+            byte[] documentBytes = br.ReadBytes((int) len); 
             req.AddParameter("application/dat", documentBytes, ParameterType.RequestBody);
             var resp = _client.ExecuteTaskAsync(req);
             return resp;
