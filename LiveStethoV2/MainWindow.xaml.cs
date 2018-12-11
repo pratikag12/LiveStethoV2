@@ -40,6 +40,7 @@ namespace LiveStethoV2
         private const int _chunkSize = 16000;
         public BinaryReader reader = null;
         string inputfile = Path.Combine(Directory.GetCurrentDirectory(), @"TestAudio.dat");
+        string outputfile = Path.Combine(Directory.GetCurrentDirectory(), @"StethoSound.dat");
         //Audio Player Classes--------------------------------------------
         AudioPlayer StethoPlayer;
 
@@ -97,7 +98,7 @@ namespace LiveStethoV2
             SerialDataIn = new SerialCom(921600, "COM8");
 
             //Open File For Writing
-            Sthetho.OutFileName = "StethoSound";
+            Sthetho.OutFileName = "StethoSound"; //Deprecated
             Sthetho.WriteToFile = true;
 
             VertAnnotate.CoordinateMode = SciChart.Charting.Visuals.Annotations.AnnotationCoordinateMode.Absolute;
@@ -119,7 +120,7 @@ namespace LiveStethoV2
             if (Sthetho.WriteToFile)
             {
                 //tmpFile = new StreamWriter(File.OpenWrite(@"D:\Test Data S\Wpf Application\LiveStethoV2\LiveStethoV2\RecievedFiles\StethoStream.adt")); }
-                tmpFile = File.OpenWrite("StethoStream.dat");
+                tmpFile = File.OpenWrite(outputfile);
             }
 
             timer = new MultimediaTimer() { Interval = 1 };
@@ -203,7 +204,7 @@ namespace LiveStethoV2
             dataStream.Connect();  //For the .Publish on the observable
         }
 
-        private async void Stop()
+        private void Stop()
         {
             if (timer.IsRunning)
                 timer.Stop();
@@ -212,24 +213,26 @@ namespace LiveStethoV2
             timer.Dispose();
             //Remove timer Reference
             tmpFile.Close();  //Save File
+            SaveResultToServer(); //Save Result to Server
+        }
 
-            long fileLength = new FileInfo("StethoStream.dat").Length; //Get file length
-
+        //Server Comm
+        public async void SaveResultToServer()
+        {
+            long fileLength = new FileInfo(outputfile).Length; //Get file length
+            FlaskCommunication flaskcom = new FlaskCommunication(); 
             //Send File to server
-            Console.Write("Adding MetaData to Server");
-            string data = await this.PostData("Heart Sound", fileLength);
-            Console.Write(data);
-            Console.Write("Getting All Data From Server");
-            data = await this.GetData();
-            Console.Write(data);
-            string filepath = Path.Combine(Directory.GetCurrentDirectory(), @"StethoStream.dat");
-            Console.Write("Sending File to Server");
-            HttpStatusCode code = await this.PostFile(filepath, fileLength); 
-            Console.Write(code);
-            Console.Write("Getting Single File From Server");
-            Tuple<HttpStatusCode, string> datatest = await this.GetMetaData(1);
-            Console.Write(datatest.Item1);
-            Console.Write(datatest.Item2);
+            Console.WriteLine("Adding MetaData to Server");
+            Tuple<HttpStatusCode, SoundDataModel.SoundData> data = await flaskcom.PostMetaData("HeartData", fileLength);
+            if(data.Item1 == HttpStatusCode.OK)
+            {
+                HttpStatusCode fileupload = await flaskcom.PostFile(outputfile, fileLength, 
+                    data.Item2.Id);
+                if(fileupload != HttpStatusCode.OK)
+                {
+                    MessageBox.Show("Failed to save file to server");
+                }
+            }     
         }
 
         private void Clear()

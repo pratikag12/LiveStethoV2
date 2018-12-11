@@ -123,6 +123,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="FlaskCommunication.cs" />
     <Compile Include="GraphCommand.cs" />
     <Compile Include="MultimediaTimer.cs" />
     <Compile Include="ApiClient.cs" />
