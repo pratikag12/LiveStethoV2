@@ -125,8 +125,9 @@
     </ApplicationDefinition>
     <Compile Include="GraphCommand.cs" />
     <Compile Include="MultimediaTimer.cs" />
-    <Compile Include="RestClient.cs" />
+    <Compile Include="ApiClient.cs" />
     <Compile Include="SerialCom.cs" />
+    <Compile Include="SoundDataModel.cs" />
     <Compile Include="SoundGraphing.cs" />
     <Compile Include="StethoViewModel.cs" />
     <Compile Include="WaveWriter.cs" />

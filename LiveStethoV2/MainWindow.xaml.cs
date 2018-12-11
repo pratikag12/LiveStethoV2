@@ -111,6 +111,9 @@ namespace LiveStethoV2
 
         private void Init()
         {
+            var cli = new ApiClient();
+            cli.GetFileList().Subscribe((e) =>
+                Console.WriteLine(e.Content));
             Sthetho.IsStreaming = true;  //Block Streaming Button
             checkboxFile.IsEnabled = false; //Disable CheckBox
                                             //SerialDataIn.OpenSerialPort();  //Open Serial Data Por
