@@ -1,6 +1,6 @@
 ﻿namespace LiveStethoV2
 {
-    partial class Form1
+    partial class PopupListView
     {
         /// <summary>
         /// Required designer variable.
@@ -28,12 +28,21 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
+            this.SuspendLayout();
+            // 
+            // PopupListView
+            // 
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 450);
-            this.Text = "Form1";
+            this.ClientSize = new System.Drawing.Size(411, 292);
+            this.Name = "Recorded Sound Files";
+            this.Text = "Recorded Sound Files";
+            this.ResumeLayout(false);
+
         }
 
         #endregion
+        private System.Windows.Forms.ListView SoundDataList;
+        private System.Windows.Forms.CheckBox EnableAnalyze;
     }
 }

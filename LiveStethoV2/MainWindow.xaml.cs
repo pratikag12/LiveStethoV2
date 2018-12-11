@@ -241,6 +241,9 @@ namespace LiveStethoV2
         private void Clear()
         {
             SoundData.Clear();
+            //Test Populate List View
+            PopupListView view = new PopupListView();
+            view.Show(); 
         }
 
         //Temporay Open File--------------------------------------------------->
