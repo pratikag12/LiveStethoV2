@@ -19,6 +19,7 @@ namespace LiveStethoV2
 
         private void PopupListViewLoad(object sender, EventArgs e)
         {
+            SizeLastColumn(SoundDataList);
             this.CreateMyListView(SoundDataList);
         }
 
@@ -81,8 +82,19 @@ namespace LiveStethoV2
 
         private void SoundDataList_DoubleClick(object sender, EventArgs e)
         {
-            MessageBox.Show(SoundDataList.SelectedItems.ToString());
             MessageBox.Show(SoundDataList.SelectedItems[0].SubItems[0].Text);
         }
+
+        private void SoundDataList_Resize(object sender, EventArgs e)
+        {
+            SizeLastColumn((ListView)sender);
+        }
+
+        private void SizeLastColumn(ListView lv)
+        {
+            SoundDataList.Columns[SoundDataList.Columns.Count - 1].Width = -2;
+        }
+
+
     }
 }

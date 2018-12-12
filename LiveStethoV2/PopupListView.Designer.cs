@@ -49,6 +49,7 @@
             this.SoundDataList.TabIndex = 0;
             this.SoundDataList.UseCompatibleStateImageBehavior = false;
             this.SoundDataList.DoubleClick += new System.EventHandler(this.SoundDataList_DoubleClick);
+            this.SoundDataList.Resize += new System.EventHandler(this.SoundDataList_Resize);
             // 
             // Id
             // 
