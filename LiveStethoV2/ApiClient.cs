@@ -20,7 +20,7 @@ namespace LiveStethoV2
 
         public ApiClient()
         {
-            this._client = new RestClient("http://127.0.0.1:5000/api/v1_0");
+            this._client = new RestClient("http://54.174.90.252:5000/api/v1_0");
         }
 
         //Acquire all metadata
