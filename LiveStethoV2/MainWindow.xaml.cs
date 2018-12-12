@@ -259,7 +259,8 @@ namespace LiveStethoV2
 
             //Test Populate List View
             PopupListView view = new PopupListView(SoundList); //Generate Form with list data
-            view.Show();
+            view.ShowDialog();
+            MessageBox.Show(view.SelectedRecord.ToString());
         }
 
 

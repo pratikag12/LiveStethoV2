@@ -85,7 +85,6 @@
             this.Controls.Add(this.EnableAnalyze);
             this.Text = "Recorded Sound Files";
             this.Load += new System.EventHandler(this.PopupListViewLoad);
-            this.Shown += new System.EventHandler(this.PopupListViewShown);
             this.ResumeLayout(false);
 
         }

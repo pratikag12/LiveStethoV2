@@ -12,7 +12,9 @@ namespace LiveStethoV2
 {
     public partial class PopupListView : Form
     {
-        List<SoundDataModel.SoundData> SoundList; 
+        private List<SoundDataModel.SoundData> SoundList;
+        public int SelectedRecord { get; set; }
+ 
         public PopupListView(List<SoundDataModel.SoundData> SoundList)
         {
             this.SoundList = SoundList;
@@ -49,13 +51,10 @@ namespace LiveStethoV2
             }
         }
 
-        private void PopupListViewShown(object sender, EventArgs e)
-        {
-        }
-
         private void SoundDataList_DoubleClick(object sender, EventArgs e)
         {
-            MessageBox.Show(SoundDataList.SelectedItems[0].Text);
+            this.SelectedRecord = Convert.ToInt32(SoundDataList.SelectedItems[0].Text);
+            this.Close();
         }
 
         //Colum Resizing function
