@@ -45,7 +45,7 @@ namespace LiveStethoV2
             {
                 ListViewItem item = new ListViewItem(elem.Id.ToString());
                 item.SubItems.Add(elem.Name);
-                item.SubItems.Add(elem.FileUri);
+                item.SubItems.Add(elem.Date.ToString());
                 item.SubItems.Add(elem.Length.ToString());
                 listView1.Items.Add(item);
             }
