@@ -284,8 +284,11 @@ namespace LiveStethoV2
                 //Analyze if Needed
                 if(view.Analyze)
                 {
-                    await flaskcom.A
-                    MessageBox.Show("Analysis Done");
+                    Tuple<HttpStatusCode, SoundDataModel.AnalysisResult> analyzeres = await flaskcom.GetAnalysisResult(view.SelectedRecord);
+                    if (analyzeres.Item1 == HttpStatusCode.OK)
+                    {
+                        MessageBox.Show("Analysis Done - " + analyzeres.Item2.ToString());
+                    }                       
                 }                   
             }
 
