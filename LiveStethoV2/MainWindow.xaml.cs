@@ -80,13 +80,12 @@ namespace LiveStethoV2
             //Graphing Add In Code-Behind
             SoundData = new XyDataSeries<double, short>();
             SoundData.FifoCapacity = this.Capacity * 16000;
-            SoundSeries.DataSeries = SoundData;
-            YAxis.VisibleRange = new DoubleRange(-32000, 32000);
 
             //View Model Update
             Sthetho = new StethoViewModel(Init, Stop, Clear, Retrieve);
             this.DataContext = Sthetho;
             Sthetho.IsStreaming = false;
+            Sthetho.FilterHeart = false;
 
             //Open File (Remove for serial Stream)
             reader = OpenFile(inputfile);
@@ -116,14 +115,18 @@ namespace LiveStethoV2
 
             Sthetho.IsStreaming = true;  //Block Streaming Button
             checkboxFile.IsEnabled = false; //Disable CheckBox
-                                            //SerialDataIn.OpenSerialPort();  //Open Serial Data Por
+            //SerialDataIn.OpenSerialPort();  //Open Serial Data Por
 
+            //Setup Sound plot
             SoundSeries.DataSeries = SoundData;
+            YAxis.VisibleRange = new DoubleRange(-32000, 32000);
             this.sciChartSurface.XAxis.AutoRange = SciChart.Charting.Visuals.Axes.AutoRange.Always;
             SoundData.Clear(); 
+
+            //Check if File will be written
             if (Sthetho.WriteToFile)
             {
-                //tmpFile = new StreamWriter(File.OpenWrite(@"D:\Test Data S\Wpf Application\LiveStethoV2\LiveStethoV2\RecievedFiles\StethoStream.adt")); }
+               
                 if(File.Exists(outputfile))
                 {
                     File.Delete(outputfile);
@@ -285,8 +288,11 @@ namespace LiveStethoV2
         public void PlotServerData(byte [] sounddata)
         {
 
-            var shorts = new List<short>();
+            var shorts = new List<short>(); //To Store data list
+            var revdataSeries = new XyDataSeries<int, short>(); //Data Series
+            SoundSeries.DataSeries = revdataSeries;     //Attach series to Datasiers
 
+            //Convert Byte Array to short
             for (int n = 0; n < sounddata.Length; n += 2)
             {
                 short sample = BitConverter.ToInt16(sounddata, n);
@@ -294,21 +300,14 @@ namespace LiveStethoV2
             }
 
             List<int> xval = Enumerable.Range(plotCount, shorts.Count).ToList<int>();
-            List<double> xval_fl = new List<double>();
-            foreach (int i in xval)
-            {
-                //double mult = (double)1/ (double) 15277;
-                double mult = 1;
-                double val = (double)i * mult;
-                xval_fl.Add(val);
-            }
-
-            var revdataSeries = new XyDataSeries<double, short>();
-            SoundSeries.DataSeries = revdataSeries;
-            YAxis.VisibleRange = new DoubleRange(shorts.Min() - 5000, shorts.Max()+ 5000);
-            XAxis.VisibleRange = new DoubleRange(xval_fl.Min(), xval_fl.Max());
+               
+            //Change View
+            YAxis.VisibleRange = new DoubleRange(shorts.Min() - 7500, shorts.Max()+ 7500);
+            XAxis.VisibleRange = new DoubleRange(xval.Min(), xval.Max());
             this.sciChartSurface.XAxis.AutoRange = SciChart.Charting.Visuals.Axes.AutoRange.Never;
-            revdataSeries.Append(xval_fl, shorts);
+
+            //Plot Data
+            revdataSeries.Append(xval, shorts);
         }
 
         //Temporay Open File--------------------------------------------------->
