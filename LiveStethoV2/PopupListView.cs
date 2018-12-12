@@ -36,15 +36,15 @@ namespace LiveStethoV2
             // Display grid lines.
             listView1.GridLines = true;
             // Sort the items in the list in ascending order.
-            listView1.Sorting = SortOrder.Ascending;
+            listView1.Sorting = SortOrder.Descending;
 
            // Create three items and three sets of subitems for each item.
-            for (int i=0; i < 5; i++)
+            foreach (SoundDataModel.SoundData elem in this.SoundList)
             {
-                ListViewItem item = new ListViewItem(i.ToString());
-                item.SubItems.Add("2");
-                item.SubItems.Add("3");
-                item.SubItems.Add("4");
+                ListViewItem item = new ListViewItem(elem.Id.ToString());
+                item.SubItems.Add(elem.Name);
+                item.SubItems.Add(elem.FileUri);
+                item.SubItems.Add(elem.Length.ToString());
                 listView1.Items.Add(item);
             }
         }
@@ -55,9 +55,10 @@ namespace LiveStethoV2
 
         private void SoundDataList_DoubleClick(object sender, EventArgs e)
         {
-            MessageBox.Show(SoundDataList.SelectedItems[0].SubItems[0].Text);
+            MessageBox.Show(SoundDataList.SelectedItems[0].Text);
         }
 
+        //Colum Resizing function
         private void SoundDataList_Resize(object sender, EventArgs e)
         {
             SizeLastColumn((ListView)sender);

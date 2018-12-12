@@ -58,11 +58,12 @@
             // Name
             // 
             this.Name.Text = "Name";
+            this.Name.Width = 80;
             // 
             // DateUploaded
             // 
             this.DateUploaded.Text = "Date Uploaded";
-            this.DateUploaded.Width = 100;
+            this.DateUploaded.Width = 150;
             // 
             // Bytes
             // 
