@@ -196,7 +196,7 @@ namespace LiveStethoV2
                     {
                         foreach (var v in values)
                         {
-                            short s = BitConverter.ToInt16(new byte[2] { (byte)v[1], (byte)v[0] }, 0);
+                            short s = BitConverter.ToInt16(new byte[2] { (byte)v[0], (byte)v[1] }, 0);
                             //if (StethoPlayer.PlayBackState == PlaybackState.Playing)
                             //Sthetho.AnnotationX = plotCount - (16000);
                             if (Sthetho.FilterHeart)
