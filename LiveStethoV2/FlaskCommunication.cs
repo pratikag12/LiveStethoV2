@@ -51,5 +51,13 @@ namespace LiveStethoV2
             IRestResponse data = await apidata;
             return Tuple.Create<HttpStatusCode, byte[]>(data.StatusCode, data.RawBytes);
         }
+
+        public async Task<Tuple<HttpStatusCode, SoundDataModel.AnalysisResult>> GetAnalysisResult(int id)
+        {
+            ApiClient cli = new ApiClient();
+            Task<IRestResponse<SoundDataModel.AnalysisResult>> apidata = cli.GetAnalysisResult(id);
+            IRestResponse<SoundDataModel.AnalysisResult> data = await apidata;
+            return Tuple.Create<HttpStatusCode, SoundDataModel.AnalysisResult>(data.StatusCode, data.Data);
+        }
     }
 }

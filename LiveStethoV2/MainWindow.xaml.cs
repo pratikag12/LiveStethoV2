@@ -282,7 +282,11 @@ namespace LiveStethoV2
                 SoundData.Clear();
                 this.PlotServerData(seldata.Item2);
                 //Analyze if Needed
-
+                if(view.Analyze)
+                {
+                    await flaskcom.A
+                    MessageBox.Show("Analysis Done");
+                }                   
             }
 
         }
