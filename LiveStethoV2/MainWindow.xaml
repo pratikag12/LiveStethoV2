@@ -29,7 +29,7 @@
             <!--  Create an X Axis  -->
             <s:SciChartSurface.XAxis>
                 <s:NumericAxis Name="XAxis"
-                               AutoRange="Never"
+                               AutoRange="Always"
                                AxisTitle="Time (Sec)"
                                DrawMinorGridLines="False"
                                DrawMinorTicks="False"

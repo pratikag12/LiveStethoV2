@@ -119,6 +119,7 @@ namespace LiveStethoV2
                                             //SerialDataIn.OpenSerialPort();  //Open Serial Data Por
 
             SoundSeries.DataSeries = SoundData;
+            this.sciChartSurface.XAxis.AutoRange = SciChart.Charting.Visuals.Axes.AutoRange.Always;
             SoundData.Clear(); 
             if (Sthetho.WriteToFile)
             {
@@ -272,9 +273,7 @@ namespace LiveStethoV2
             if(seldata.Item1 == HttpStatusCode.OK)
             {
                 SoundData.Clear();
-                
-
-         
+                this.PlotServerData(seldata.Item2);  
             }
 
         }
@@ -284,14 +283,12 @@ namespace LiveStethoV2
 
             var shorts = new List<short>();
 
-            for (int n = 0; n < seldata.Item2.Length; n += 2)
+            for (int n = 0; n < sounddata.Length; n += 2)
             {
-                short sample = BitConverter.ToInt16(seldata.Item2, n);
+                short sample = BitConverter.ToInt16(sounddata, n);
                 shorts.Add(sample);
             }
 
-
-            SoundData.FifoCapacity = null;
             List<int> xval = Enumerable.Range(plotCount, shorts.Count).ToList<int>();
             List<double> xval_fl = new List<double>();
             foreach (int i in xval)
@@ -304,8 +301,9 @@ namespace LiveStethoV2
 
             var revdataSeries = new XyDataSeries<double, short>();
             SoundSeries.DataSeries = revdataSeries;
-            YAxis.VisibleRange = new DoubleRange(shorts.Min(), shorts.Max());
+            YAxis.VisibleRange = new DoubleRange(shorts.Min() - 5000, shorts.Max()+ 5000);
             XAxis.VisibleRange = new DoubleRange(xval_fl.Min(), xval_fl.Max());
+            this.sciChartSurface.XAxis.AutoRange = SciChart.Charting.Visuals.Axes.AutoRange.Never;
             revdataSeries.Append(xval_fl, shorts);
         }
 
