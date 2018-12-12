@@ -241,10 +241,27 @@ namespace LiveStethoV2
         private void Clear()
         {
             SoundData.Clear();
-            //Test Populate List View
-            PopupListView view = new PopupListView();
-            view.Show(); 
+            GetDataFromServer();
         }
+
+        //Server Comm
+        public async void GetDataFromServer()
+        {            
+            //Get All MetaData From server
+            FlaskCommunication flaskcom = new FlaskCommunication();
+            Tuple<HttpStatusCode, SoundDataModel> data = await flaskcom.GetAllMetaData();
+
+            List<SoundDataModel.SoundData> SoundList = null;
+            if (data.Item1 == HttpStatusCode.OK)
+            {
+                SoundList = data.Item2.SoundDatas; //Get List of SoundData
+            }
+
+            //Test Populate List View
+            PopupListView view = new PopupListView(SoundList); //Generate Form with list data
+            view.Show();
+        }
+
 
         //Temporay Open File--------------------------------------------------->
         public BinaryReader OpenFile(string inputfile)

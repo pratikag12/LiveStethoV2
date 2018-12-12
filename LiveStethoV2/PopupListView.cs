@@ -12,8 +12,10 @@ namespace LiveStethoV2
 {
     public partial class PopupListView : Form
     {
-        public PopupListView()
+        List<SoundDataModel.SoundData> SoundList; 
+        public PopupListView(List<SoundDataModel.SoundData> SoundList)
         {
+            this.SoundList = SoundList;
             InitializeComponent();
         }
 
@@ -37,9 +39,6 @@ namespace LiveStethoV2
             listView1.Sorting = SortOrder.Ascending;
 
            // Create three items and three sets of subitems for each item.
-
-
-
             for (int i=0; i < 5; i++)
             {
                 ListViewItem item = new ListViewItem(i.ToString());
@@ -48,32 +47,6 @@ namespace LiveStethoV2
                 item.SubItems.Add("4");
                 listView1.Items.Add(item);
             }
-
-
-
-           //ListViewItem item1 = new ListViewItem();
-           // Place a check mark next to the item.
-           // item1.SubItems.Add("1");
-           // item1.SubItems.Add("2");
-           // ListViewItem item2 = new ListViewItem();
-           // item2.SubItems.Add("4");
-           // item2.SubItems.Add("5");
-           // ListViewItem item3 = new ListViewItem();
-           // Place a check mark next to the item.
-           // item3.SubItems.Add("7");
-           // item3.SubItems.Add("8");
-
-           // Create columns for the items and subitems.
-
-           // Width of - 2 indicates auto - size.
-           //listView1.Columns.Add("Name");
-           // listView1.Columns.Add("Size (Bytes)");
-           // listView1.Columns.Add("Date");
-
-           // Add the items to the ListView.
-           // listView1.Items.AddRange(new ListViewItem[] { item1, item2, item3 });
-
-            // Create two ImageList objects.
         }
 
         private void PopupListViewShown(object sender, EventArgs e)
@@ -94,7 +67,5 @@ namespace LiveStethoV2
         {
             SoundDataList.Columns[SoundDataList.Columns.Count - 1].Width = -2;
         }
-
-
     }
 }
