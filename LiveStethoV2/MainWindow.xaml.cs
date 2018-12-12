@@ -280,7 +280,8 @@ namespace LiveStethoV2
             if(seldata.Item1 == HttpStatusCode.OK)
             {
                 SoundData.Clear();
-                this.PlotServerData(seldata.Item2);  
+                this.PlotServerData(seldata.Item2);
+                //Analyze if Needed
             }
 
         }

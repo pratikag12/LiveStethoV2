@@ -85,7 +85,6 @@
             this.ClientSize = new System.Drawing.Size(411, 292);
             this.Controls.Add(this.SoundDataList);
             this.Controls.Add(this.EnableAnalyze);
-            this.Name = "PopupListView";
             this.Text = "Recorded Sound Files";
             this.Load += new System.EventHandler(this.PopupListViewLoad);
             this.ResumeLayout(false);

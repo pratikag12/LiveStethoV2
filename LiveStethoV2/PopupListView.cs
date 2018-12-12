@@ -14,7 +14,8 @@ namespace LiveStethoV2
     {
         private List<SoundDataModel.SoundData> SoundList;
         public int SelectedRecord { get; set; }
- 
+        public bool Analyze { get; set; }
+
         public PopupListView(List<SoundDataModel.SoundData> SoundList)
         {
             this.SoundList = SoundList;
@@ -54,6 +55,7 @@ namespace LiveStethoV2
         private void SoundDataList_DoubleClick(object sender, EventArgs e)
         {
             this.SelectedRecord = Convert.ToInt32(SoundDataList.SelectedItems[0].Text);
+            this.Analyze = this.EnableAnalyze.Checked;
             this.Close();
         }
 
