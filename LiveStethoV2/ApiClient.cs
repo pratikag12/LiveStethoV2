@@ -71,6 +71,13 @@ namespace LiveStethoV2
         }
 
         //Retrieve sounddata
+        public Task<IRestResponse> GetSoundFile(int id)
+        {
+            var req = new RestRequest("/sounddata/{id}", Method.GET);
+            req.AddUrlSegment("id", id);
+            var resp = _client.ExecuteTaskAsync(req); 
+            return resp;
+        }
 
         //Retrieve analysis results
 

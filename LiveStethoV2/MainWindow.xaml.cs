@@ -31,7 +31,7 @@ namespace LiveStethoV2
     public partial class MainWindow : Window
     {
         //Graphing---------------------------------------
-        private IXyDataSeries<int, short> SoundData;
+        private IXyDataSeries<double, short> SoundData;
         private int plotCount = 0;
         private int Capacity = 10;
         List<byte> SoundBuffer = new List<byte>();
@@ -78,7 +78,7 @@ namespace LiveStethoV2
             }
 
             //Graphing Add In Code-Behind
-            SoundData = new XyDataSeries<int, short>();
+            SoundData = new XyDataSeries<double, short>();
             SoundData.FifoCapacity = this.Capacity * 16000;
             SoundSeries.DataSeries = SoundData;
             YAxis.VisibleRange = new DoubleRange(-32000, 32000);
@@ -117,6 +117,9 @@ namespace LiveStethoV2
             Sthetho.IsStreaming = true;  //Block Streaming Button
             checkboxFile.IsEnabled = false; //Disable CheckBox
                                             //SerialDataIn.OpenSerialPort();  //Open Serial Data Por
+
+            SoundSeries.DataSeries = SoundData;
+            SoundData.Clear(); 
             if (Sthetho.WriteToFile)
             {
                 //tmpFile = new StreamWriter(File.OpenWrite(@"D:\Test Data S\Wpf Application\LiveStethoV2\LiveStethoV2\RecievedFiles\StethoStream.adt")); }
@@ -170,9 +173,10 @@ namespace LiveStethoV2
             // Save to file
             if (Sthetho.WriteToFile)
             {
-                dataStream.Subscribe(data =>
+                dataStream.Buffer(2).Subscribe(data =>
                 {
-                    tmpFile.WriteByte(data);
+                    tmpFile.WriteByte(data[0]);
+                    tmpFile.WriteByte(data[1]);
                     tmpFile.Flush();
                 });
             }
@@ -213,6 +217,8 @@ namespace LiveStethoV2
                 timer.Stop();
             reader.BaseStream.Seek(0, SeekOrigin.Begin);  //Reset binary stream
             timer.Dispose();
+
+            this.plotCount = 0; //Reset Plot count
             //Remove timer Reference
             tmpFile.Close();  //Save File
             SaveResultToServer(); //Save Result to Server
@@ -260,7 +266,47 @@ namespace LiveStethoV2
             //Test Populate List View
             PopupListView view = new PopupListView(SoundList); //Generate Form with list data
             view.ShowDialog();
-            MessageBox.Show(view.SelectedRecord.ToString());
+            //Get Selected MetaData Object
+            Tuple<HttpStatusCode, byte []> seldata = await flaskcom.GetSoundFile(view.SelectedRecord);
+            
+            if(seldata.Item1 == HttpStatusCode.OK)
+            {
+                SoundData.Clear();
+                
+
+         
+            }
+
+        }
+
+        public void PlotServerData(byte [] sounddata)
+        {
+
+            var shorts = new List<short>();
+
+            for (int n = 0; n < seldata.Item2.Length; n += 2)
+            {
+                short sample = BitConverter.ToInt16(seldata.Item2, n);
+                shorts.Add(sample);
+            }
+
+
+            SoundData.FifoCapacity = null;
+            List<int> xval = Enumerable.Range(plotCount, shorts.Count).ToList<int>();
+            List<double> xval_fl = new List<double>();
+            foreach (int i in xval)
+            {
+                //double mult = (double)1/ (double) 15277;
+                double mult = 1;
+                double val = (double)i * mult;
+                xval_fl.Add(val);
+            }
+
+            var revdataSeries = new XyDataSeries<double, short>();
+            SoundSeries.DataSeries = revdataSeries;
+            YAxis.VisibleRange = new DoubleRange(shorts.Min(), shorts.Max());
+            XAxis.VisibleRange = new DoubleRange(xval_fl.Min(), xval_fl.Max());
+            revdataSeries.Append(xval_fl, shorts);
         }
 
 

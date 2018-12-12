@@ -43,5 +43,13 @@ namespace LiveStethoV2
             return Tuple.Create<HttpStatusCode, SoundDataModel.SoundData>(data.StatusCode, data.Data); //Return Get Meta Data Content With
         }
 
+        
+        public async Task<Tuple<HttpStatusCode, byte[]>> GetSoundFile(int id)
+        {
+            ApiClient cli = new ApiClient();
+            Task<IRestResponse> apidata = cli.GetSoundFile(id);
+            IRestResponse data = await apidata;
+            return Tuple.Create<HttpStatusCode, byte[]>(data.StatusCode, data.RawBytes);
+        }
     }
 }
