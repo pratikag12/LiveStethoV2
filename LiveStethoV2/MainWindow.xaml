@@ -16,8 +16,9 @@
         <Button x:Name="btnStream" Command ="{Binding StreamCommand}"  CommandParameter ="{Binding IsStreaming}" Content="Stream" HorizontalAlignment="Left" Margin="43,21,0,0" VerticalAlignment="Top" Width="138" Grid.Column="1" Height="23"/>
         <Button x:Name="btnStop" Command ="{Binding StopCommand}" CommandParameter ="{Binding IsStreaming}" Content="Stop" HorizontalAlignment="Left" Margin="43,56,0,0" VerticalAlignment="Top" Width="138" Grid.Column="1" Height="22"/>
         <Button x:Name="btnClear" Command ="{Binding ClearCommand}" Content ="Clear Chart" HorizontalAlignment="Left" Margin="44,93,0,0" VerticalAlignment="Top" Width="134" Height="22" RenderTransformOrigin="0.468,2.719" Grid.Column="1"/>
-        <CheckBox x:Name="checkboxFile" IsChecked ="{Binding WriteToFile, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Content="Record To New File" Margin="43,188,66,0" VerticalAlignment="Top" Grid.Column="1" Background="White" BorderBrush="Black" Foreground="White"/>
-        <CheckBox x:Name="heartfilter" IsChecked ="{Binding FilterHeart, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Content="Heart Filter" Margin="43.4,218,65.8,0" VerticalAlignment="Top" Grid.Column="1" Background="White" BorderBrush="Black" Foreground="White"/>
+        <Button x:Name="btnRetrieve" Content="Retrieve" Grid.Column="1" HorizontalAlignment="Left" Margin="44,129,0,0" VerticalAlignment="Top" Width="133" Height="22"/>
+        <CheckBox x:Name="checkboxFile" IsChecked ="{Binding WriteToFile, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Content="Record To New File" Margin="43,234,66,0" VerticalAlignment="Top" Grid.Column="1" Background="White" BorderBrush="Black" Foreground="White"/>
+        <CheckBox x:Name="heartfilter" IsChecked ="{Binding FilterHeart, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Content="Heart Filter" Margin="43,265,66,0" VerticalAlignment="Top" Grid.Column="1" Background="White" BorderBrush="Black" Foreground="White"/>
 
         <s:SciChartSurface x:Name="sciChartSurface">
             <!--  Create a RenderableSeries, which map 1:1 to the DataSeries created in code-behind  -->
@@ -68,8 +69,8 @@
                 <s:VerticalLineAnnotation x:Name="VertAnnotate" X1="{Binding AnnotationX}" Stroke="Orange" StrokeThickness="2.5"/>
             </s:SciChartSurface.Annotations>
         </s:SciChartSurface>
-        <TextBox Grid.Column="1" HorizontalAlignment="Left" Height="24" Margin="47,150,0,0" TextWrapping="Wrap" Text="{Binding OutFileName,Mode=TwoWay, UpdateSourceTrigger=LostFocus}" VerticalAlignment="Top" Width="134"/>
-        <Label Content="File Name" Grid.Column="1" HorizontalAlignment="Left" Margin="47,123,0,0" VerticalAlignment="Top" Height="27" Width="122" Background="{x:Null}" Foreground="White"/>
+        <TextBox Grid.Column="1" HorizontalAlignment="Left" Height="24" Margin="43,198,0,0" TextWrapping="Wrap" Text="{Binding OutFileName,Mode=TwoWay, UpdateSourceTrigger=LostFocus}" VerticalAlignment="Top" Width="134"/>
+        <Label Content="File Name" Grid.Column="1" HorizontalAlignment="Left" Margin="44,171,0,0" VerticalAlignment="Top" Height="27" Width="122" Background="{x:Null}" Foreground="White"/>
 
     </Grid>
 </Window>
