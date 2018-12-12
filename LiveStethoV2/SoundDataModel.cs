@@ -18,6 +18,11 @@ namespace LiveStethoV2
             public DateTime Date { get; set; }
         }
 
+        public class AnalysisResult
+        {
+            public int Result { get; set; }
+        }
+
         public List<SoundData> SoundDatas { get; set; }
     }
 }

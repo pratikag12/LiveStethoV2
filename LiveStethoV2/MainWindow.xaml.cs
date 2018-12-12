@@ -282,6 +282,7 @@ namespace LiveStethoV2
                 SoundData.Clear();
                 this.PlotServerData(seldata.Item2);
                 //Analyze if Needed
+
             }
 
         }
