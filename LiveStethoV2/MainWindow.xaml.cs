@@ -84,7 +84,7 @@ namespace LiveStethoV2
             YAxis.VisibleRange = new DoubleRange(-32000, 32000);
 
             //View Model Update
-            Sthetho = new StethoViewModel(Init, Stop, Clear);
+            Sthetho = new StethoViewModel(Init, Stop, Clear, Retrieve);
             this.DataContext = Sthetho;
             Sthetho.IsStreaming = false;
 
@@ -248,6 +248,10 @@ namespace LiveStethoV2
         private void Clear()
         {
             SoundData.Clear();
+        }
+
+        private void Retrieve()
+        {
             GetDataFromServer();
         }
 
@@ -306,7 +310,6 @@ namespace LiveStethoV2
             this.sciChartSurface.XAxis.AutoRange = SciChart.Charting.Visuals.Axes.AutoRange.Never;
             revdataSeries.Append(xval_fl, shorts);
         }
-
 
         //Temporay Open File--------------------------------------------------->
         public BinaryReader OpenFile(string inputfile)

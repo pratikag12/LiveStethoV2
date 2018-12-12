@@ -19,8 +19,9 @@ namespace LiveStethoV2
         public GraphCommand StreamCommand { get; set; }
         public GraphCommand StopCommand { get; set; }
         public GraphCommand ClearCommand { get; set; }
+        public GraphCommand RetrieveCommand { get; set; }
 
-        public StethoViewModel(Action StreamAct, Action StopAct, Action ClearAct)
+        public StethoViewModel(Action StreamAct, Action StopAct, Action ClearAct, Action RetrieveAct)
         {
             StreamCommand = new GraphCommand(() => StreamAct()
             , (x) =>
@@ -34,6 +35,13 @@ namespace LiveStethoV2
             (x) => Convert.ToBoolean(x));
 
             ClearCommand = new GraphCommand(() => ClearAct());
+
+            RetrieveCommand = new GraphCommand(() => RetrieveAct(), (x) =>
+             {
+                 if (Convert.ToBoolean(x)) //If Is Streaming Prevent button from being pressed
+                    return false;
+                 return true;
+             });
 
         }
 
