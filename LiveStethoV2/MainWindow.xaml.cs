@@ -287,7 +287,19 @@ namespace LiveStethoV2
                     Tuple<HttpStatusCode, SoundDataModel.AnalysisResult> analyzeres = await flaskcom.GetAnalysisResult(view.SelectedRecord);
                     if (analyzeres.Item1 == HttpStatusCode.OK)
                     {
-                        MessageBox.Show("Analysis Done - " + analyzeres.Item2.ToString());
+                        switch(analyzeres.Item2.Result)
+                        {
+                            case 0:
+                                MessageBox.Show("Analysis Done - Abnormal Heart");
+                                break;
+                            case 1:
+                                MessageBox.Show("Analysis Done - Healthy Heart");
+                                break;                              
+                            default:
+                                MessageBox.Show("Numpy File Not found");
+                                break;
+                        }
+                       
                     }                       
                 }                   
             }
