@@ -19,7 +19,6 @@ namespace LiveStethoV2
                 throw new NullReferenceException("execute");
             _execute = execute;
             _canExecute = canExecute;
-
         }
 
         public GraphCommand(Action execute) : this(execute, null)

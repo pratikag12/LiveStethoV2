@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.ComponentModel;
 using NAudio.Wave;
+using NAudio.Dsp;
 using System.Threading;
 
 namespace LiveStethoV2
@@ -14,7 +15,8 @@ namespace LiveStethoV2
         private readonly BackgroundWorker AudioPlayerBG = new BackgroundWorker(); //New Bg Worker
         private IWavePlayer player;        //Wave Out Player
         private BufferedWaveProvider audioprovider;  //Ram Stream
-        private int _rate; 
+        private int _rate;
+        public BiQuadFilter quadFilter;
 
         public AudioPlayer(int rate, int bits, int channels)
         {
@@ -33,7 +35,7 @@ namespace LiveStethoV2
             get {
                 return this.player;
             }
-            set { player = value; }
+            set { this.player = value; }
         }
         private BufferedWaveProvider AudioProvider
         {
@@ -41,11 +43,10 @@ namespace LiveStethoV2
             {
                 return this.audioprovider;
             }
-            set { audioprovider = value;
+            set { this.audioprovider = value;
 				//audioprovider.BufferDuration = TimeSpan.FromMinutes(1);
 			}
         }
-
 
         public void AddData(byte[] data)
         {
@@ -55,8 +56,9 @@ namespace LiveStethoV2
         {
             this.AudioOut = new DirectSoundOut();
             this.AudioProvider = new BufferedWaveProvider(new WaveFormat(rate, bits, channels));
+            //this.AudioProvider.ReadFully = false; //Donot return requested stream bytes if not needed
             this.AudioOut.Init(this.AudioProvider);  //Initialize directsoundout player
-            //this.AudioOut.PlaybackStopped += new EventHandler<NAudio.Wave.StoppedEventArgs>(this.SoundPlayed); //Register Playback Stopped Handler
+            this.AudioOut.PlaybackStopped += new EventHandler<NAudio.Wave.StoppedEventArgs>(this.SoundPlayed); //Register Playback Stopped Handler
         }
 
         public void Play()
@@ -68,12 +70,13 @@ namespace LiveStethoV2
         }
         private void SoundPlayed(object sender, StoppedEventArgs data)
         {
+            this.AudioOut.Stop();
             Console.WriteLine("NAudio Finished Sound Playing");
         }
 
         private void AudioPlayerWork(object sender, DoWorkEventArgs e)
         {
-             player.Play();               
+             this.AudioOut.Play();               
         }
 
         public PlaybackState PlayBackState

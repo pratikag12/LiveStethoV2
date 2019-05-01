@@ -60,7 +60,7 @@ namespace LiveStethoV2
         MultimediaTimer timer;
 
         //Filter Object
-        double fc1 = 50; //low cutoff frequency
+        double fc1 = 20; //low cutoff frequency
         double fc2 = 250; //high cutoff frequency
         double samplerate = 15277;
         OnlineFilter BandPassfilter;
@@ -91,7 +91,7 @@ namespace LiveStethoV2
             reader = OpenFile(inputfile);
 
             //Audio Class
-            StethoPlayer = new AudioPlayer(15277, 16, 1);
+            StethoPlayer = new AudioPlayer(15200, 16, 1);
 
             //Open Serial Port
             SerialDataIn = new SerialCom(921600, "COM8");
@@ -115,19 +115,19 @@ namespace LiveStethoV2
 
             Sthetho.IsStreaming = true;  //Block Streaming Button
             checkboxFile.IsEnabled = false; //Disable CheckBox
-            //SerialDataIn.OpenSerialPort();  //Open Serial Data Por
+            SerialDataIn.OpenSerialPort();  //Open Serial Data Por
 
             //Setup Sound plot
             SoundSeries.DataSeries = SoundData;
             YAxis.VisibleRange = new DoubleRange(-32000, 32000);
             this.sciChartSurface.XAxis.AutoRange = SciChart.Charting.Visuals.Axes.AutoRange.Always;
-            SoundData.Clear(); 
+            SoundData.Clear();
 
             //Check if File will be written
             if (Sthetho.WriteToFile)
             {
-               
-                if(File.Exists(outputfile))
+
+                if (File.Exists(outputfile))
                 {
                     File.Delete(outputfile);
                 }
@@ -138,6 +138,7 @@ namespace LiveStethoV2
 
             Console.WriteLine("Running graphing system");
             //Observable to output to observer
+            /*
             var dataStream = Observable.Create<byte[]>(ob =>
             {
                 timer.Elapsed += (source, e) =>
@@ -156,10 +157,10 @@ namespace LiveStethoV2
                 timer.Start();
                 return Disposable.Empty;
             })
-            .SelectMany(data => data.ToObservable())
-            .Publish();
+            .SelectMany<byte[], byte>(data => data.ToObservable())
+            .Publish<byte>();
+            */
 
-            /*
             //Observable to output to observer - SerialPort
             var dataStream = Observable.FromEventPattern<SerialDataReceivedEventHandler, SerialDataReceivedEventArgs>(
                 h => SerialDataIn.SerialPortFTDI.DataReceived += h,
@@ -172,49 +173,77 @@ namespace LiveStethoV2
                 })
             .SelectMany(data => data.ToObservable())
             .Publish();
-            */
+
 
             // Save to file
+            dataStream
+                .Buffer(2)
+                .Buffer(1000)
+                .SubscribeOn(NewThreadScheduler.Default)
+                .Subscribe(data =>
+            {
+                var res = data.ToArray();
+                foreach (var t in res)
+                {
+                    StethoPlayer.AddData(new byte[] { t[1], t[0] });
+                }
+                //StethoPlayer.AddData(res);
+                StethoPlayer.Play();
+
+                //tmpFile.WriteByte(data[0]);
+                //tmpFile.Write(res, 0, res.Length);
+                //tmpFile.WriteByte(data[1]);
+                //tmpFile.Flush();
+            });
+
+            /*
             if (Sthetho.WriteToFile)
             {
                 dataStream.Buffer(2).Subscribe(data =>
                 {
                     tmpFile.WriteByte(data[0]);
                     tmpFile.WriteByte(data[1]);
-                    tmpFile.Flush();
+                    //tmpFile.Flush();
                 });
             }
-
+            */
             //Graphing
             dataStream
                 .Buffer(2)
-                .Buffer(153)
+                .Buffer(250)
                 .Subscribe(values =>
                 {
                     // draw
                     using (sciChartSurface.SuspendUpdates())
                     {
+                        //Console.WriteLine("Data Received");
                         foreach (var v in values)
                         {
                             short s = BitConverter.ToInt16(new byte[2] { (byte)v[0], (byte)v[1] }, 0);
+                            tmpFile.WriteByte(v[0]);
+                            tmpFile.WriteByte(v[1]);
+                            //tmpFile.WriteAsync(v.ToArray(), 0, v.ToArray().Length);
                             //if (StethoPlayer.PlayBackState == PlaybackState.Playing)
+                            //{
                             //Sthetho.AnnotationX = plotCount - (16000);
-                            if (Sthetho.FilterHeart)
-                            {
-                                SoundData.Append(plotCount++, (short)Denoiser.ProcessSample(BandPassfilter.ProcessSample((double)s)));
-                                //SoundData.Append(plotCount++, (short)(double)s));
-                            }
-                            else
-                            {
-                                SoundData.Append(plotCount++, s);
-                            }
+                            //}
+                            //if (Sthetho.FilterHeart)
+                            //{
+                            //SoundData.Append(plotCount++, (short)Denoiser.ProcessSample(BandPassfilter.ProcessSample((double)s)));
+                            // SoundData.Append(plotCount++, (short) s);
+                            //}
+                            //else
+                            //{
+                            SoundData.Append(plotCount++, s);
+                            //}
                         }
                     }
                 });
 
             dataStream.Connect();  //For the .Publish on the observable
         }
-
+         
+ 
         private void Stop()
         {
             if (timer.IsRunning)
