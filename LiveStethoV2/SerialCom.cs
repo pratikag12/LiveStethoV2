@@ -37,7 +37,15 @@ namespace LiveStethoV2
         {
             try
             {
-                this.SerialFTDI.Open();
+                if(!this.SerialFTDI.IsOpen)
+                {
+                    this.SerialFTDI.Open();
+                }
+                else
+                {
+                    this.SerialFTDI.DiscardOutBuffer();
+                    this.SerialFTDI.DiscardInBuffer();
+                }
             }
             catch (IOException)
             {

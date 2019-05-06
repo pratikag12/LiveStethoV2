@@ -39,7 +39,7 @@ namespace LiveStethoV2
         //Binary Reader (TODO: temp)-----------------------------------------
         private const int _chunkSize = 16000;
         public BinaryReader reader = null;
-        string inputfile = Path.Combine(Directory.GetCurrentDirectory(), @"TestAudio.dat");
+        string inputfile = Path.Combine(Directory.GetCurrentDirectory(), @"TestAudio.pcm");
         string outputfile = Path.Combine(Directory.GetCurrentDirectory(), @"StethoSound.dat");
         //Audio Player Classes--------------------------------------------
         AudioPlayer StethoPlayer;
@@ -64,7 +64,6 @@ namespace LiveStethoV2
         double fc2 = 250; //high cutoff frequency
         double samplerate = 15277;
         OnlineFilter BandPassfilter;
-        OnlineFilter Denoiser;
 
         public MainWindow()
         {
@@ -107,7 +106,12 @@ namespace LiveStethoV2
 
             //Create filter objects
             BandPassfilter = OnlineFilter.CreateHighpass(ImpulseResponse.Finite, samplerate, fc1);
-            Denoiser = OnlineFilter.CreateDenoise(25);
+            //Denoiser = OnlineFilter.CreateDenoise(25);
+        }
+
+        private async void WriteFileASync(IList<byte> data)
+        {
+            await tmpFile.WriteAsync(data.ToArray(), 0, data.ToArray().Length);
         }
 
         private void Init()
@@ -138,43 +142,47 @@ namespace LiveStethoV2
 
             Console.WriteLine("Running graphing system");
             //Observable to output to observer
-            /*
-            var dataStream = Observable.Create<byte[]>(ob =>
+
+            System.Reactive.Subjects.IConnectableObservable<byte> dataStream =null;
+            if (Sthetho.Demo)
             {
-                timer.Elapsed += (source, e) =>
+                dataStream = Observable.Create<byte[]>(ob =>
                 {
-                    if (reader.BaseStream.Position < reader.BaseStream.Length)
+                    timer.Elapsed += (source, e) =>
                     {
-                        ob.OnNext(reader.ReadBytes(32));  //Call connected, subscribed observables. 
-                    }
-                    else
-                    {
-                        Console.WriteLine("timer: ready to stop");
-                        timer.Stop();
-                        Console.WriteLine("timer: stopped");
-                    }
-                };
-                timer.Start();
-                return Disposable.Empty;
-            })
-            .SelectMany<byte[], byte>(data => data.ToObservable())
-            .Publish<byte>();
-            */
-
-            //Observable to output to observer - SerialPort
-            var dataStream = Observable.FromEventPattern<SerialDataReceivedEventHandler, SerialDataReceivedEventArgs>(
-                h => SerialDataIn.SerialPortFTDI.DataReceived += h,
-                h => SerialDataIn.SerialPortFTDI.DataReceived -= h)
-                .Select(arg =>
-                {
-                    byte[] buf = new byte[SerialDataIn.SerialPortFTDI.BytesToRead];
-                    SerialDataIn.SerialPortFTDI.Read(buf, 0, buf.Length);
-                    return buf;
+                        if (reader.BaseStream.Position < reader.BaseStream.Length)
+                        {
+                            ob.OnNext(reader.ReadBytes(32));  //Call connected, subscribed observables. 
+                        }
+                        else
+                        {
+                            Console.WriteLine("timer: ready to stop");
+                            timer.Stop();
+                            Console.WriteLine("timer: stopped");
+                        }
+                    };
+                    timer.Start();
+                    return Disposable.Empty;
                 })
-            .SelectMany(data => data.ToObservable())
-            .Publish();
-
-
+                .SelectMany(data => data.ToObservable())
+                .Publish();
+            }
+            else
+            {
+                //Observable to output to observer - SerialPort
+                dataStream = Observable.FromEventPattern<SerialDataReceivedEventHandler, SerialDataReceivedEventArgs>(
+                    h => SerialDataIn.SerialPortFTDI.DataReceived += h,
+                    h => SerialDataIn.SerialPortFTDI.DataReceived -= h)
+                    .Select(arg =>
+                    {
+                        byte[] buf = new byte[SerialDataIn.SerialPortFTDI.BytesToRead];
+                        SerialDataIn.SerialPortFTDI.Read(buf, 0, buf.Length);
+                        return buf;
+                    })
+                .SelectMany(data => data.ToObservable())
+                .Publish();
+            }
+           
             // Save to file
             dataStream
                 .Buffer(2)
@@ -195,6 +203,7 @@ namespace LiveStethoV2
                 //tmpFile.WriteByte(data[1]);
                 //tmpFile.Flush();
             });
+         
 
             /*
             if (Sthetho.WriteToFile)
@@ -210,7 +219,7 @@ namespace LiveStethoV2
             //Graphing
             dataStream
                 .Buffer(2)
-                .Buffer(250)
+                .Buffer(153)
                 .Subscribe(values =>
                 {
                     // draw
@@ -219,23 +228,23 @@ namespace LiveStethoV2
                         //Console.WriteLine("Data Received");
                         foreach (var v in values)
                         {
-                            short s = BitConverter.ToInt16(new byte[2] { (byte)v[0], (byte)v[1] }, 0);
+                            short s = BitConverter.ToInt16(new byte[2] { (byte)v[1], (byte)v[0] }, 0);
                             tmpFile.WriteByte(v[0]);
-                            tmpFile.WriteByte(v[1]);
-                            //tmpFile.WriteAsync(v.ToArray(), 0, v.ToArray().Length);
-                            //if (StethoPlayer.PlayBackState == PlaybackState.Playing)
-                            //{
-                            //Sthetho.AnnotationX = plotCount - (16000);
-                            //}
-                            //if (Sthetho.FilterHeart)
-                            //{
-                            //SoundData.Append(plotCount++, (short)Denoiser.ProcessSample(BandPassfilter.ProcessSample((double)s)));
-                            // SoundData.Append(plotCount++, (short) s);
-                            //}
-                            //else
-                            //{
-                            SoundData.Append(plotCount++, s);
-                            //}
+                            tmpFile.WriteByte(v[1]); 
+                            //WriteFileASync(v);
+                            if (StethoPlayer.PlayBackState == PlaybackState.Playing)
+                            {
+                                Sthetho.AnnotationX = plotCount - (16000);
+                            }
+                            if (Sthetho.FilterHeart)
+                            {
+                               SoundData.Append(plotCount++, (short) BandPassfilter.ProcessSample((double)s));
+                               //SoundData.Append(plotCount++, (short) s);
+                            }
+                            else
+                            {
+                              SoundData.Append(plotCount++, s);
+                            }
                         }
                     }
                 });

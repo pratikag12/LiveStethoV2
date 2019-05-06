@@ -14,6 +14,7 @@ namespace LiveStethoV2
         private bool _IsStreaming;
         private bool _WriteToFile;
         private bool _FilterHeart;
+        private bool _Demo;
         private string _outFilename;
         private IComparable _AnnoationX;
         public GraphCommand StreamCommand { get; set; }
@@ -93,6 +94,16 @@ namespace LiveStethoV2
             {
                 _FilterHeart = value;
                 OnPropertyChanged("FilterHeart");
+            }
+        }
+
+        public bool Demo
+        {
+            get { return _Demo; }
+            set
+            {
+                _Demo = value;
+                OnPropertyChanged("Demo");
             }
         }
 

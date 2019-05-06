@@ -49,13 +49,14 @@ namespace LiveStethoV2
         }
 
         public void AddData(byte[] data)
-        {
+        {        
             this.audioprovider.AddSamples(data, 0, data.Length);
         }
         private void InitializePlayer(int rate, int bits, int channels)
         {
             this.AudioOut = new DirectSoundOut();
             this.AudioProvider = new BufferedWaveProvider(new WaveFormat(rate, bits, channels));
+            this.audioprovider.DiscardOnBufferOverflow = true;
             //this.AudioProvider.ReadFully = false; //Donot return requested stream bytes if not needed
             this.AudioOut.Init(this.AudioProvider);  //Initialize directsoundout player
             this.AudioOut.PlaybackStopped += new EventHandler<NAudio.Wave.StoppedEventArgs>(this.SoundPlayed); //Register Playback Stopped Handler
